@@ -5,19 +5,21 @@
  * being viewed.
  *
  * Responsibilities:
- * - Display a related-products section
- * - Render reusable ProductCard components
- * - Keep recommendation logic separate from the product page
+ * - Display related medical equipment.
+ * - Render reusable ProductCard components.
+ * - Pass the correct product ID to ProductCard.
+ * - Use the same product data structure as the main catalogue.
  *
  * Why this is a separate component:
- * The ProductDetails page should mainly compose sections.
- * Recommendation logic can become more advanced later,
- * so keeping it isolated makes the page easier to maintain.
+ * Recommendation logic and recommendation UI should remain
+ * independent from the main ProductDetails page.
  *
- * Future functionality:
- * Related products can eventually come from the backend
- * based on category, product type, tags, or AI recommendations.
+ * Future:
+ * Related products can later come from the backend,
+ * category filtering, admin selection, or AI recommendations.
  */
+
+import { Link } from "react-router-dom";
 
 import ProductCard from "./ProductCard";
 
@@ -25,13 +27,18 @@ import ProductCard from "./ProductCard";
 function RelatedProducts({
   products = [],
 }) {
+
   /*
-   * If there are no related products, the section should not
-   * occupy unnecessary space on the product details page.
+   * =======================================================
+   * EMPTY STATE
+   * =======================================================
    *
-   * This also makes the component safe to use while API data
-   * is still loading or when a product has no recommendations.
+   * If no related products are available, we don't render
+   * an empty section.
+   *
+   * This keeps the product details page clean.
    */
+
   if (!products.length) {
     return null;
   }
@@ -86,6 +93,7 @@ function RelatedProducts({
                 text-[#1769d1]
               "
             >
+
               <span
                 className="
                   h-1.5
@@ -96,6 +104,7 @@ function RelatedProducts({
               />
 
               You may also need
+
             </div>
 
 
@@ -133,10 +142,16 @@ function RelatedProducts({
           </div>
 
 
-          {/* View all products action */}
+          {/* =================================================
+              VIEW ALL PRODUCTS
+              =================================================
+              
+              This link points to the future product catalogue
+              page.
+          ================================================= */}
 
-          <button
-            type="button"
+          <Link
+            to="/products"
             className="
               hidden
               shrink-0
@@ -164,7 +179,8 @@ function RelatedProducts({
             <span aria-hidden="true">
               →
             </span>
-          </button>
+
+          </Link>
 
         </div>
 
@@ -173,17 +189,15 @@ function RelatedProducts({
             RELATED PRODUCTS GRID
             =================================================
             
-            ProductCard already handles:
-            - Image
-            - Name
-            - Rating
-            - Price
-            - Discount
-            - Stock
-            - Product actions
+            IMPORTANT:
+            ProductCard requires the product ID.
             
-            This component only controls the section and
-            decides which products should be displayed.
+            The ID creates the dynamic URL:
+            
+            /products/patient-monitor-pro
+            
+            We also use product.images[0] because the central
+            catalogue stores images as an array.
         ================================================= */}
 
         <div
@@ -198,19 +212,21 @@ function RelatedProducts({
         >
 
           {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              image={product.image}
-              category={product.category}
-              name={product.name}
-              description={product.description}
-              rating={product.rating}
-              reviews={product.reviews}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              discount={product.discount}
-              stock={product.stock}
-              badge={product.badge}
+
+          <ProductCard
+             key={product.id}
+             id={product.id}
+             image={product.images?.[0]}
+             category={product.category}
+             name={product.name}
+             description={product.description}
+             rating={product.rating}
+             reviews={product.reviews}
+             price={product.price}
+             originalPrice={product.originalPrice}
+             discount={product.discount}
+             stock={product.stock}
+             badge={product.badge}
             />
           ))}
 
@@ -223,8 +239,8 @@ function RelatedProducts({
 
         <div className="mt-8 flex justify-center sm:hidden">
 
-          <button
-            type="button"
+          <Link
+            to="/products"
             className="
               inline-flex
               items-center
@@ -247,7 +263,7 @@ function RelatedProducts({
               →
             </span>
 
-          </button>
+          </Link>
 
         </div>
 
@@ -256,5 +272,6 @@ function RelatedProducts({
     </section>
   );
 }
+
 
 export default RelatedProducts;
