@@ -10,9 +10,11 @@
  * - Keeps public and protected routes easy to organize.
  *
  * Current routes:
- * /                       -> Home page
- * /products               -> Product catalogue
- * /products/:productId    -> Dynamic product details page
+ * /                           -> Home page
+ * /products                   -> Product catalogue
+ * /products/:productId        -> Product details
+ * /profile                    -> User profile dashboard
+ * /profile/orders             -> User orders
  *
  * SECURITY NOTE:
  * Frontend routing only controls what page the user can visit.
@@ -38,6 +40,12 @@ import Products from "../pages/Products";
 
 // Dynamic product details page.
 import ProductDetails from "../pages/ProductDetails";
+
+// User profile dashboard.
+import Profile from "../pages/Profile";
+
+// User orders page.
+import ProfileOrders from "../pages/ProfileOrders";
 
 
 function AppRoutes() {
@@ -106,9 +114,6 @@ function AppRoutes() {
           /products/icu-ventilator
           /products/digital-ecg
 
-          The actual product will be identified using
-          the productId parameter.
-
           IMPORTANT:
           We do NOT create a separate JSX page for every
           individual product.
@@ -117,6 +122,60 @@ function AppRoutes() {
       <Route
         path="/products/:productId"
         element={<ProductDetails />}
+      />
+
+
+      {/* =================================================
+          PROFILE DASHBOARD ROUTE
+          =================================================
+
+          Main account/profile dashboard.
+
+          This page contains:
+          - Profile information
+          - Profile navigation
+          - Account sections
+          - Orders navigation
+          - Saved products
+          - Security
+          - Account settings
+
+          URL:
+          /profile
+      ================================================= */}
+
+      <Route
+        path="/profile"
+        element={<Profile />}
+      />
+
+
+      {/* =================================================
+          PROFILE ORDERS ROUTE
+          =================================================
+
+          Displays the user's order history.
+
+          URL:
+          /profile/orders
+
+          IMPORTANT:
+          The actual order data is currently frontend/demo
+          data.
+
+          Later this page will receive real order information
+          from the backend API.
+
+          Example future API:
+
+          GET /api/orders
+
+          Authentication will be handled by the backend.
+      ================================================= */}
+
+      <Route
+        path="/profile/orders"
+        element={<ProfileOrders />}
       />
 
 
@@ -133,7 +192,6 @@ function AppRoutes() {
           /login
           /register
           /cart
-          /account
       ================================================= */}
 
 
@@ -141,27 +199,65 @@ function AppRoutes() {
           FUTURE PROTECTED ROUTES
           =================================================
 
-          Admin/customer-sensitive routes will eventually
-          be protected using authentication and authorization.
+          Customer-sensitive routes will eventually use
+          authentication.
 
           Example:
+
+          /profile
+          /profile/orders
+          /profile/settings
+          /profile/security
+
+          IMPORTANT:
+
+          React Router is NOT a security boundary.
+
+          A user can manually type a URL in the browser,
+          so sensitive operations must ALWAYS be checked
+          by the backend.
+
+          Backend will verify:
+
+          - Authentication
+          - User identity
+          - User role
+          - Resource ownership
+          - Authorization
+
+          Example:
+
+          User A must NOT be able to request:
+
+          GET /api/orders/user-B-order-id
+
+          simply by changing an ID in the frontend.
+
+          The backend will verify that the requested order
+          actually belongs to the authenticated user.
+      ================================================= */}
+
+
+      {/* =================================================
+          FUTURE ADMIN ROUTES
+          =================================================
+
+          Possible future routes:
 
           /admin
           /admin/products
           /admin/categories
           /admin/orders
+          /admin/users
 
-          IMPORTANT:
-          We will NOT rely only on React Router for security.
+          These will require backend role authorization.
 
-          The backend will verify:
-          - Authentication
-          - User identity
-          - User role
-          - Authorization
+          Example:
 
-          This prevents a user from bypassing frontend
-          restrictions by directly calling an API.
+          role === "admin"
+
+          But the real authorization check will happen
+          on the backend, not only inside React.
       ================================================= */}
 
 
