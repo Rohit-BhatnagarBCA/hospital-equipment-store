@@ -29,19 +29,29 @@ import { Routes, Route } from "react-router-dom";
 // Main landing page.
 import Home from "../pages/Home";
 
-// Product catalogue.
+// Product catalogue page.
 import Products from "../pages/Products";
 
-// Dynamic product details.
+// Dynamic product details page.
 import ProductDetails from "../pages/ProductDetails";
 
 // Customer profile dashboard.
 import Profile from "../pages/Profile";
 
-// Customer orders page.
-import ProfileOrders from "../pages/ProfileOrders";
 
-// Individual order details.
+// =========================================================
+// PROFILE / ORDERS COMPONENTS
+// =========================================================
+
+// Customer orders page.
+//
+// IMPORTANT:
+// ProfileOrders is NOT inside pages/.
+// It is inside:
+// components/Profile/Orders/ProfileOrders.jsx
+import ProfileOrders from "../components/Profile/Orders/ProfileOrders";
+
+// Individual order details page.
 import ProfileOrderDetails from "../components/Profile/Orders/ProfileOrderDetails";
 
 
@@ -51,13 +61,10 @@ function AppRoutes() {
 
     <Routes>
 
+
       {/* =================================================
           HOME
-          =================================================
-          
-          URL:
-          /
-      ================================================= */}
+          ================================================= */}
 
       <Route
         path="/"
@@ -67,14 +74,7 @@ function AppRoutes() {
 
       {/* =================================================
           PRODUCTS
-          =================================================
-          
-          Displays:
-          - Product catalogue
-          - Search
-          - Category filtering
-          - Sorting
-      ================================================= */}
+          ================================================= */}
 
       <Route
         path="/products"
@@ -107,14 +107,8 @@ function AppRoutes() {
           
           Main customer account page.
           
-          Contains:
-          - Profile information
-          - Account summary
-          - Order summary
-          - Recent orders
-          - Profile navigation
-          
           URL:
+          
           /profile
       ================================================= */}
 
@@ -125,18 +119,23 @@ function AppRoutes() {
 
 
       {/* =================================================
-          PROFILE ORDERS
+          CUSTOMER ORDERS
           =================================================
           
-          Displays the complete order history of the
-          currently authenticated customer.
+          Displays the customer's complete order history.
+          
+          IMPORTANT:
+          
+          ProfileOrders is currently a component, not a
+          page inside src/pages/.
+          
+          Actual file:
+          
+          src/components/Profile/Orders/ProfileOrders.jsx
           
           URL:
+          
           /profile/orders
-          
-          Future backend:
-          
-          GET /api/orders
       ================================================= */}
 
       <Route
@@ -149,17 +148,16 @@ function AppRoutes() {
           ORDER DETAILS
           =================================================
           
-          Displays details of one specific order.
+          Dynamic order route.
           
-          Dynamic parameter:
-          :orderId
-          
-          Example:
+          Examples:
           
           /profile/orders/ORD-1001
           /profile/orders/ORD-1002
           
-          The same page handles every order.
+          Actual component:
+          
+          src/components/Profile/Orders/ProfileOrderDetails.jsx
       ================================================= */}
 
       <Route
@@ -169,10 +167,21 @@ function AppRoutes() {
 
 
       {/* =================================================
-          FUTURE PUBLIC ROUTES
+          FUTURE CUSTOMER ROUTES
           =================================================
           
-          These can be added when their pages are ready:
+          Add these only when their components/pages exist.
+          
+          /profile/saved
+          /profile/security
+          /profile/settings
+          /profile/addresses
+      ================================================= */}
+
+
+      {/* =================================================
+          FUTURE PUBLIC ROUTES
+          =================================================
           
           /categories/:categoryId
           /login
@@ -182,26 +191,9 @@ function AppRoutes() {
       ================================================= */}
 
 
-
-      {/* =================================================
-          FUTURE CUSTOMER ROUTES
-          =================================================
-          
-          Possible future account pages:
-          
-          /profile/settings
-          /profile/security
-          /profile/saved-products
-          /profile/addresses
-      ================================================= */}
-
-
-
       {/* =================================================
           FUTURE ADMIN ROUTES
           =================================================
-          
-          Possible routes:
           
           /admin
           /admin/products
@@ -209,18 +201,9 @@ function AppRoutes() {
           /admin/orders
           /admin/users
           
-          IMPORTANT:
-          
-          Admin authorization must NOT depend only on
-          React Router.
-          
-          Backend must verify:
-          
-          - Authentication
-          - User identity
-          - User role
-          - Authorization
+          Backend authorization will be required.
       ================================================= */}
+
 
     </Routes>
 

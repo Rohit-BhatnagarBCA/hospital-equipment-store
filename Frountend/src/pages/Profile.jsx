@@ -1,143 +1,165 @@
 /*
  * Profile Page
  * -------------------------------------------------------
- * Customer account dashboard.
+ * Main customer account dashboard.
  *
  * Responsibilities:
- * - Display customer profile information
- * - Display profile sidebar
+ * - Display customer profile
+ * - Display account sidebar
  * - Display order summary
  * - Display recent orders
- * - Provide a central account dashboard
  *
- * IMPORTANT:
- * This page is currently using frontend/demo data.
- *
- * Later this page can be connected to:
- * - Authenticated user API
- * - Orders API
- * - Profile API
- * - Account settings API
- *
- * Current component structure:
+ * Current structure:
  *
  * Profile.jsx
  *    │
- *    ├── ProfileSidebar
- *    │
+ *    ├── AccountSidebar
  *    ├── ProfileSection
- *    │
  *    ├── OrderSummary
- *    │
  *    └── OrdersSection
+ *
+ * IMPORTANT:
+ * This page currently uses frontend/demo order data.
+ *
+ * Later:
+ *
+ * Backend API
+ *      ↓
+ * Authenticated customer
+ *      ↓
+ * Real profile + order data
  */
 
 import Navbar from "../components/shared/Navbar";
 import AiAgent from "../components/shared/AiAgent";
 import Footer from "../components/shared/Footer";
 
-import ProfileSidebar from "../components/Profile/ProfileSidebar";
-import ProfileSection from "../components/Profile/ProfileSection";
-import OrderSummary from "../components/Profile/OrderSummary";
-import OrdersSection from "../components/Profile/OrdersSection";
+
+// =========================================================
+// ACCOUNT COMPONENTS
+// =========================================================
+
+// Actual sidebar file in this project.
+import AccountSidebar from "../components/Account/AccountSidebar";
+
+// Profile information section.
+import ProfileSection from "../components/Account/ProfileSection";
 
 
-/*
- * =========================================================
- * DEMO ORDER DATA
- * =========================================================
- *
- * Temporary frontend data.
- *
- * Later:
- *
- * GET /api/orders
- *
- * will provide the authenticated user's actual orders.
- */
+// =========================================================
+// ORDER COMPONENTS
+// =========================================================
+
+// Order summary is inside the Orders folder.
+import OrderSummary from "../components/Profile/Orders/OrderSummary";
+
+// Recent order list.
+import OrdersSection from "../components/Profile/Orders/OrdersSection";
+
+
+// =========================================================
+// TEMPORARY DEMO ORDERS
+// =========================================================
+//
+// These orders are only for frontend UI development.
+//
+// Later they will come from:
+// GET /api/orders
+//
 
 const orders = [
-  {
-    id: "ORD-1004",
-    orderNumber: "ORD-1004",
-    date: "2026-10-01",
-    product: {
-      name: "Advanced Patient Monitor",
-      image: null,
-    },
-    quantity: 1,
-    amount: 85000,
-    status: "processing",
-  },
-
-  {
-    id: "ORD-1003",
-    orderNumber: "ORD-1003",
-    date: "2026-09-25",
-    product: {
-      name: "ICU Ventilator System",
-      image: null,
-    },
-    quantity: 1,
-    amount: 245000,
-    status: "confirmed",
-  },
-
-  {
-    id: "ORD-1002",
-    orderNumber: "ORD-1002",
-    date: "2026-09-18",
-    product: {
-      name: "Digital ECG Machine",
-      image: null,
-    },
-    quantity: 2,
-    amount: 96000,
-    status: "shipped",
-  },
 
   {
     id: "ORD-1001",
-    orderNumber: "ORD-1001",
-    date: "2026-09-05",
+    orderNumber: "MSI-1001",
+    date: "2026-09-28",
+
     product: {
-      name: "Hospital Infusion Pump",
-      image: null,
+      name: "Advanced Patient Monitoring System",
+      image: "/products/patient-monitor.png",
     },
-    quantity: 2,
-    amount: 58000,
+
+    quantity: 1,
+    amount: 85000,
     status: "delivered",
   },
+
+
+  {
+    id: "ORD-1002",
+    orderNumber: "MSI-1002",
+    date: "2026-09-30",
+
+    product: {
+      name: "ICU Ventilator Pro",
+      image: "/products/icu-ventilator.png",
+    },
+
+    quantity: 2,
+    amount: 145000,
+    status: "shipped",
+  },
+
+
+  {
+    id: "ORD-1003",
+    orderNumber: "MSI-1003",
+    date: "2026-10-01",
+
+    product: {
+      name: "Digital ECG Machine",
+      image: "/products/digital-ecg.png",
+    },
+
+    quantity: 1,
+    amount: 42000,
+    status: "processing",
+  },
+
 ];
+
 
 
 function Profile() {
 
   /*
    * =======================================================
-   * ORDER SUMMARY DATA
+   * ORDER SUMMARY CALCULATIONS
    * =======================================================
-   *
-   * These values are calculated from the order list.
-   *
-   * Later the backend can provide these values directly.
    */
 
+  // Total number of orders.
   const totalOrders = orders.length;
 
+
+  // Orders which are still active.
+  //
+  // Delivered and cancelled orders are not considered
+  // active.
   const activeOrders = orders.filter(
-    (order) =>
-      ["processing", "confirmed", "shipped"].includes(
-        String(order.status || "").toLowerCase()
-      )
+    (order) => {
+
+      const status = String(order.status || "")
+        .toLowerCase();
+
+      return (
+        status !== "delivered" &&
+        status !== "cancelled"
+      );
+
+    }
   ).length;
 
+
+  // Total delivered orders.
   const deliveredOrders = orders.filter(
     (order) =>
       String(order.status || "").toLowerCase() ===
       "delivered"
   ).length;
 
+
+  // Total amount spent across all orders.
   const totalSpending = orders.reduce(
     (total, order) =>
       total + Number(order.amount || 0),
@@ -145,24 +167,20 @@ function Profile() {
   );
 
 
-  /*
-   * =======================================================
-   * PAGE UI
-   * =======================================================
-   */
-
   return (
 
     <div className="min-h-screen bg-[#f8fbff]">
 
+
       {/* =================================================
-          GLOBAL NAVIGATION
+          GLOBAL NAVBAR
           ================================================= */}
 
       <Navbar />
 
 
       <main>
+
 
         {/* =================================================
             PAGE HEADER
@@ -181,9 +199,14 @@ function Profile() {
           "
         >
 
-          <div className="mx-auto max-w-[1440px]">
+          <div
+            className="
+              mx-auto
+              max-w-[1440px]
+            "
+          >
 
-            {/* Small label */}
+            {/* Small section label */}
 
             <div
               className="
@@ -270,28 +293,30 @@ function Profile() {
               grid
               max-w-[1440px]
               gap-6
-              lg:grid-cols-[280px_minmax(0,1fr)]
+              lg:grid-cols-[270px_minmax(0,1fr)]
               lg:items-start
             "
           >
 
+
             {/* =================================================
-                PROFILE SIDEBAR
+                ACCOUNT SIDEBAR
                 ================================================= */}
 
-            <ProfileSidebar />
+            <AccountSidebar />
 
 
             {/* =================================================
-                MAIN PROFILE CONTENT
+                MAIN ACCOUNT CONTENT
                 ================================================= */}
 
             <div
               className="
                 min-w-0
-                space-y-6
+                space-y-8
               "
             >
+
 
               {/* =================================================
                   PROFILE INFORMATION
@@ -313,12 +338,13 @@ function Profile() {
 
 
               {/* =================================================
-                  ORDERS
+                  RECENT ORDERS
                   ================================================= */}
 
               <OrdersSection
                 orders={orders}
               />
+
 
             </div>
 
@@ -330,7 +356,7 @@ function Profile() {
 
 
       {/* =================================================
-          FLOATING AI AGENT
+          FLOATING AI ASSISTANT
           ================================================= */}
 
       <AiAgent />
@@ -341,6 +367,7 @@ function Profile() {
           ================================================= */}
 
       <Footer />
+
 
     </div>
 
