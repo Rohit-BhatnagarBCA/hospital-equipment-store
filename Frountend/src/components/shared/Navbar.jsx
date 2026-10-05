@@ -5,6 +5,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 
+
+import NavLinks from "../Navbar/NavLinks";
 /*
   =========================================================
   NAVBAR COMPONENT
@@ -81,33 +83,11 @@ function Navbar() {
             DESKTOP NAVIGATION
             ================================================= */}
 
-        <nav className="hidden items-center gap-1 xl:flex">
-          {navigationLinks.map((item) => (
-            <a
-              key={item.label}
-              href="#"
-              className="
-                group flex items-center gap-1.5
-                rounded-lg px-3 py-2
-                text-sm font-medium
-                text-[var(--color-text-muted)]
-                transition-all duration-200
-                hover:bg-[var(--color-blue-light)]
-                hover:text-[var(--color-navy)]
-              "
-            >
-              {item.label}
-
-              {item.hasDropdown && (
-                <ChevronDown
-                  size={14}
-                  strokeWidth={1.8}
-                  className="transition-transform duration-200 group-hover:translate-y-0.5"
-                />
-              )}
-            </a>
-          ))}
-        </nav>
+         {/* 
+              Primary navigation is handled by the reusable NavLinks
+              component so that Navbar.jsx remains focused on layout.
+        */}
+             <NavLinks />
 
         {/* =================================================
             SEARCH BAR

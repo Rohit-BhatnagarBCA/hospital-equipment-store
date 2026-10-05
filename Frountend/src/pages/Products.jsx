@@ -16,7 +16,7 @@
  * API without changing the overall page structure.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react"; 
 import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
 
 import Navbar from "../components/shared/Navbar";
@@ -28,6 +28,9 @@ import { products } from "../data/products";
 
 
 function Products() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const categoryFromUrl = searchParams.get("category");
 
   /*
    * Search state
@@ -40,13 +43,18 @@ function Products() {
    */
   const [searchQuery, setSearchQuery] = useState("");
 
-
-  /*
-   * Category filter state
-   * -------------------------------------------------------
-   * "all" means no category filter is currently applied.
-   */
-  const [selectedCategory, setSelectedCategory] = useState("all");
+/*
+ * Sync the selected category with the URL.
+ *
+ * Example:
+ * /products?category=critical-care
+ *
+ * If no category exists in the URL, the catalogue
+ * falls back to showing all products.
+ */
+      useEffect(() => {
+      setSelectedCategory(categoryFromUrl || "all");
+      }, [categoryFromUrl]);
 
 
   /*
