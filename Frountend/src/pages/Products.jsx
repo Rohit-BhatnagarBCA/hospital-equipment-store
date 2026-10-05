@@ -7,6 +7,7 @@
  * - Display all available products
  * - Provide product search
  * - Filter products by category
+ * - Sync category filter with URL
  * - Sort products
  * - Reuse ProductCard for consistent product UI
  *
@@ -16,8 +17,13 @@
  * API without changing the overall page structure.
  */
 
-import { useEffect, useMemo, useState } from "react"; 
-import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import {
+  Search,
+  SlidersHorizontal,
+  ChevronDown,
+} from "lucide-react";
 
 import Navbar from "../components/shared/Navbar";
 import AiAgent from "../components/shared/AiAgent";
@@ -28,53 +34,101 @@ import { products } from "../data/products";
 
 
 function Products() {
+
+  /*
+   * =========================================================
+   * URL SEARCH PARAMETERS
+   * =========================================================
+   *
+   * Example:
+   *
+   * /products?category=Critical%20Care
+   *
+   * The category value comes directly from the URL.
+   */
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const categoryFromUrl = searchParams.get("category");
 
+
   /*
-   * Search state
-   * -------------------------------------------------------
-   * Stores the text entered by the user.
+   * =========================================================
+   * SEARCH STATE
+   * =========================================================
    *
-   * Why:
-   * We need this value to compare against product names,
-   * categories and descriptions.
+   * Stores the text entered by the user.
    */
+
   const [searchQuery, setSearchQuery] = useState("");
 
-/*
- * Sync the selected category with the URL.
- *
- * Example:
- * /products?category=critical-care
- *
- * If no category exists in the URL, the catalogue
- * falls back to showing all products.
- */
-      useEffect(() => {
-      setSelectedCategory(categoryFromUrl || "all");
-      }, [categoryFromUrl]);
+
+  /*
+   * =========================================================
+   * CATEGORY STATE
+   * =========================================================
+   *
+   * "all" means that no category filter is active.
+   *
+   * The initial value is taken from the URL so that category
+   * links work immediately when the page opens.
+   */
+
+  const [selectedCategory, setSelectedCategory] = useState(
+    categoryFromUrl || "all"
+  );
 
 
   /*
-   * Sorting state
-   * -------------------------------------------------------
-   * Controls how products are ordered inside the catalogue.
+   * =========================================================
+   * SORTING STATE
+   * =========================================================
+   *
+   * Controls how products are ordered.
    */
+
   const [sortOption, setSortOption] = useState("featured");
 
 
   /*
-   * Create category list dynamically
-   * -------------------------------------------------------
-   * Categories are extracted from the product data instead
-   * of being manually written.
+   * =========================================================
+   * CATEGORY URL SYNCHRONIZATION
+   * =========================================================
    *
-   * Why:
-   * When products are added later from the backend,
-   * the category filter can be generated from the data.
+   * Keeps the selected category synchronized with the URL.
+   *
+   * Example:
+   *
+   * /products?category=Critical%20Care
+   *
+   * becomes:
+   *
+   * selectedCategory = "Critical Care"
+   *
+   * If there is no category in the URL, the page shows all
+   * products.
    */
+
+  useEffect(() => {
+
+    setSelectedCategory(
+      categoryFromUrl || "all"
+    );
+
+  }, [categoryFromUrl]);
+
+
+  /*
+   * =========================================================
+   * CATEGORY LIST
+   * =========================================================
+   *
+   * Categories are generated from the product catalogue.
+   *
+   * This prevents us from manually maintaining a second
+   * category list.
+   */
+
   const categories = useMemo(() => {
 
     const uniqueCategories = [
@@ -91,37 +145,56 @@ function Products() {
 
 
   /*
-   * Filter and sort products
-   * -------------------------------------------------------
+   * =========================================================
+   * FILTER + SORT PRODUCTS
+   * =========================================================
+   *
+   * Search, category filtering and sorting are combined here.
+   *
    * useMemo prevents unnecessary recalculation when unrelated
    * component state changes.
-   *
-   * The same logic can later be moved to the backend when
-   * the product catalogue becomes large.
    */
+
   const filteredProducts = useMemo(() => {
 
     let result = [...products];
 
 
     /*
-     * Search products
+     * -------------------------------------------------------
+     * SEARCH FILTER
+     * -------------------------------------------------------
      *
      * Search checks:
      * - Product name
-     * - Category
-     * - Description
+     * - Product category
+     * - Product description
      */
+
     if (searchQuery.trim()) {
 
-      const query = searchQuery.toLowerCase().trim();
+      const query = searchQuery
+        .toLowerCase()
+        .trim();
 
       result = result.filter((product) => {
 
         return (
-          product.name?.toLowerCase().includes(query) ||
-          product.category?.toLowerCase().includes(query) ||
-          product.description?.toLowerCase().includes(query)
+          product.name
+            ?.toLowerCase()
+            .includes(query)
+
+          ||
+
+          product.category
+            ?.toLowerCase()
+            .includes(query)
+
+          ||
+
+          product.description
+            ?.toLowerCase()
+            .includes(query)
         );
 
       });
@@ -130,8 +203,16 @@ function Products() {
 
 
     /*
-     * Category filtering
+     * -------------------------------------------------------
+     * CATEGORY FILTER
+     * -------------------------------------------------------
+     *
+     * "all" means no category filtering.
+     *
+     * Otherwise only products belonging to the selected
+     * category are displayed.
      */
+
     if (selectedCategory !== "all") {
 
       result = result.filter(
@@ -143,28 +224,36 @@ function Products() {
 
 
     /*
-     * Product sorting
+     * -------------------------------------------------------
+     * SORTING
+     * -------------------------------------------------------
      */
+
     if (sortOption === "price-low") {
 
       result.sort(
-        (a, b) => Number(a.price) - Number(b.price)
+        (a, b) =>
+          Number(a.price) - Number(b.price)
       );
 
     }
+
 
     if (sortOption === "price-high") {
 
       result.sort(
-        (a, b) => Number(b.price) - Number(a.price)
+        (a, b) =>
+          Number(b.price) - Number(a.price)
       );
 
     }
 
+
     if (sortOption === "rating") {
 
       result.sort(
-        (a, b) => Number(b.rating) - Number(a.rating)
+        (a, b) =>
+          Number(b.rating) - Number(a.rating)
       );
 
     }
@@ -179,11 +268,66 @@ function Products() {
   ]);
 
 
+  /*
+   * =========================================================
+   * CATEGORY SELECT HANDLER
+   * =========================================================
+   *
+   * When the user changes the category dropdown:
+   *
+   * 1. Update local state
+   * 2. Update the URL
+   *
+   * This keeps the page shareable and browser-navigation
+   * friendly.
+   */
+
+  const handleCategoryChange = (event) => {
+
+    const value = event.target.value;
+
+    setSelectedCategory(value);
+
+
+    /*
+     * "all" removes the category query parameter.
+     */
+
+    if (value === "all") {
+
+      searchParams.delete("category");
+
+      setSearchParams(searchParams);
+
+      return;
+    }
+
+
+    /*
+     * Store the exact product category in the URL.
+     *
+     * encodeURIComponent is handled by URLSearchParams.
+     */
+
+    setSearchParams({
+      category: value,
+    });
+
+  };
+
+
+  /*
+   * =========================================================
+   * PAGE UI
+   * =========================================================
+   */
+
   return (
 
     <div className="min-h-screen bg-white">
 
       {/* Global navigation shared across the application */}
+
       <Navbar />
 
 
@@ -193,7 +337,15 @@ function Products() {
             PAGE HEADER
             ================================================= */}
 
-        <section className="bg-[#f8fbff] px-4 py-12 sm:px-6 lg:px-8">
+        <section
+          className="
+            bg-[#f8fbff]
+            px-4
+            py-12
+            sm:px-6
+            lg:px-8
+          "
+        >
 
           <div className="mx-auto max-w-[1440px]">
 
@@ -213,7 +365,14 @@ function Products() {
               "
             >
 
-              <span className="h-1.5 w-1.5 rounded-full bg-[#1769d1]" />
+              <span
+                className="
+                  h-1.5
+                  w-1.5
+                  rounded-full
+                  bg-[#1769d1]
+                "
+              />
 
               Medical Equipment Catalogue
 
@@ -261,7 +420,14 @@ function Products() {
             PRODUCT CATALOGUE
             ================================================= */}
 
-        <section className="px-4 py-10 sm:px-6 lg:px-8">
+        <section
+          className="
+            px-4
+            py-10
+            sm:px-6
+            lg:px-8
+          "
+        >
 
           <div className="mx-auto max-w-[1440px]">
 
@@ -304,11 +470,14 @@ function Products() {
                   "
                 />
 
+
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(event) =>
-                    setSearchQuery(event.target.value)
+                    setSearchQuery(
+                      event.target.value
+                    )
                   }
                   placeholder="Search medical equipment..."
                   className="
@@ -336,7 +505,12 @@ function Products() {
 
               {/* Category filter */}
 
-              <div className="relative min-w-[220px]">
+              <div
+                className="
+                  relative
+                  min-w-[220px]
+                "
+              >
 
                 <SlidersHorizontal
                   size={17}
@@ -350,11 +524,10 @@ function Products() {
                   "
                 />
 
+
                 <select
                   value={selectedCategory}
-                  onChange={(event) =>
-                    setSelectedCategory(event.target.value)
-                  }
+                  onChange={handleCategoryChange}
                   className="
                     w-full
                     appearance-none
@@ -378,6 +551,7 @@ function Products() {
                   <option value="all">
                     All Categories
                   </option>
+
 
                   {categories.map((category) => (
 
@@ -410,12 +584,19 @@ function Products() {
 
               {/* Sort */}
 
-              <div className="relative min-w-[200px]">
+              <div
+                className="
+                  relative
+                  min-w-[200px]
+                "
+              >
 
                 <select
                   value={sortOption}
                   onChange={(event) =>
-                    setSortOption(event.target.value)
+                    setSortOption(
+                      event.target.value
+                    )
                   }
                   className="
                     w-full
@@ -501,12 +682,26 @@ function Products() {
                   Medical Equipment
                 </h2>
 
-                <p className="mt-1 text-sm text-slate-500">
+
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-slate-500
+                  "
+                >
 
                   Showing{" "}
-                  <span className="font-semibold text-slate-700">
+
+                  <span
+                    className="
+                      font-semibold
+                      text-slate-700
+                    "
+                  >
                     {filteredProducts.length}
                   </span>{" "}
+
                   products
 
                 </p>
@@ -567,10 +762,6 @@ function Products() {
               /*
                * Empty state shown when search/filter produces
                * no matching products.
-               *
-               * Why:
-               * A clear empty state gives the user feedback
-               * instead of showing a completely blank page.
                */
 
               <div
@@ -646,15 +837,18 @@ function Products() {
 
 
       {/* Floating AI assistant shared across the website */}
+
       <AiAgent />
 
 
       {/* Global website footer */}
+
       <Footer />
 
     </div>
 
   );
 }
+
 
 export default Products;

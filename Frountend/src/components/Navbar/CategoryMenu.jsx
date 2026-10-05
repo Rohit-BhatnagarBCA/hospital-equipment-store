@@ -1,109 +1,78 @@
 /*
  * CategoryMenu
  * -------------------------------------------------------
- * Displays the main medical equipment mega-menu used by
- * the website navigation.
+ * Main medical equipment mega-menu.
  *
- * Why this component is separated:
- * - Keeps Navbar.jsx focused on the overall navbar layout.
- * - Keeps category navigation independent and reusable.
- * - Makes the category structure easy to expand later.
- *
- * FUTURE:
- * The category data can be moved from this local array to
- * the backend/database when the admin category management
- * feature is implemented.
+ * IMPORTANT:
+ * Category values are aligned with the actual product
+ * catalogue so navigation and product filtering use the
+ * same source terminology.
  */
 
 import { Link } from "react-router-dom";
 
 
 /*
- * Category groups
+ * Category configuration
  * -------------------------------------------------------
- * Each group represents a major medical equipment category.
+ * These values must match product.category exactly.
  *
- * The "items" array contains sub-categories that can later
- * be replaced by categories returned from the backend.
+ * This keeps the navigation layer compatible with the
+ * existing local product catalogue and future API data.
  */
 const categoryGroups = [
   {
-    id: "critical-care",
-    title: "ICU & Critical Care",
-    description: "Equipment for intensive and critical care environments.",
+    id: "Critical Care",
+    title: "Critical Care",
+    description: "Equipment designed for intensive and emergency care.",
     items: [
-      {
-        label: "Ventilators",
-        slug: "ventilators",
-      },
-      {
-        label: "ICU Systems",
-        slug: "icu-systems",
-      },
-      {
-        label: "Critical Care Equipment",
-        slug: "critical-care-equipment",
-      },
+      "Ventilators",
+      "ICU Equipment",
+      "Critical Care Systems",
     ],
   },
 
   {
-    id: "patient-monitoring",
+    id: "Patient Monitoring",
     title: "Patient Monitoring",
-    description: "Solutions for monitoring patient health and vital signs.",
+    description: "Systems for continuous monitoring of patient vitals.",
     items: [
-      {
-        label: "Patient Monitors",
-        slug: "patient-monitors",
-      },
-      {
-        label: "ECG & Vital Signs",
-        slug: "ecg-vital-signs",
-      },
-      {
-        label: "Monitoring Accessories",
-        slug: "monitoring-accessories",
-      },
+      "Patient Monitors",
+      "Vital Signs Monitoring",
+      "Monitoring Accessories",
     ],
   },
 
   {
-    id: "diagnostic",
+    id: "Cardiology",
+    title: "Cardiology",
+    description: "Equipment for cardiac monitoring and diagnosis.",
+    items: [
+      "ECG Machines",
+      "Cardiac Monitoring",
+      "ECG Accessories",
+    ],
+  },
+
+  {
+    id: "Diagnostic Equipment",
     title: "Diagnostic Equipment",
-    description: "Equipment used for clinical diagnosis and examination.",
+    description: "Equipment for clinical diagnosis and imaging.",
     items: [
-      {
-        label: "Diagnostic Systems",
-        slug: "diagnostic-systems",
-      },
-      {
-        label: "Cardiology Equipment",
-        slug: "cardiology-equipment",
-      },
-      {
-        label: "Imaging Equipment",
-        slug: "imaging-equipment",
-      },
+      "Ultrasound Systems",
+      "Diagnostic Systems",
+      "Imaging Equipment",
     ],
   },
 
   {
-    id: "laboratory",
-    title: "Laboratory Equipment",
-    description: "Instruments for laboratory testing and medical research.",
+    id: "Infusion & IV",
+    title: "Infusion & IV",
+    description: "Precision equipment for fluid and medication delivery.",
     items: [
-      {
-        label: "Laboratory Instruments",
-        slug: "laboratory-instruments",
-      },
-      {
-        label: "Testing Equipment",
-        slug: "testing-equipment",
-      },
-      {
-        label: "Research Equipment",
-        slug: "research-equipment",
-      },
+      "Infusion Pumps",
+      "IV Equipment",
+      "Infusion Accessories",
     ],
   },
 ];
@@ -111,24 +80,19 @@ const categoryGroups = [
 
 function CategoryMenu() {
   return (
-    /*
-     * The menu uses a wide layout so users can quickly scan
-     * multiple medical equipment categories without opening
-     * several nested dropdowns.
-     */
     <div
       className="
-        w-[760px]
+        w-[780px]
         overflow-hidden
         border
         border-[var(--color-border)]
         bg-[var(--color-white)]
-        shadow-[0_18px_50px_rgba(15,35,60,0.12)]
+        shadow-[0_20px_55px_rgba(15,35,60,0.13)]
       "
     >
 
       {/* =================================================
-          MENU HEADER
+          HEADER
           ================================================= */}
 
       <div
@@ -136,8 +100,7 @@ function CategoryMenu() {
           border-b
           border-[var(--color-border)]
           px-7
-          pb-5
-          pt-6
+          py-5
         "
       >
 
@@ -158,24 +121,21 @@ function CategoryMenu() {
             mt-1.5
             text-xl
             font-bold
-            tracking-[-0.02em]
+            tracking-tight
             text-[var(--color-navy)]
           "
         >
-          Browse by category
+          Browse medical equipment
         </h3>
 
         <p
           className="
-            mt-1.5
-            max-w-[600px]
+            mt-1
             text-sm
-            leading-5
             text-[var(--color-text-muted)]
           "
         >
-          Explore healthcare equipment across critical care,
-          diagnostics, monitoring and laboratory solutions.
+          Find equipment by clinical category.
         </p>
 
       </div>
@@ -183,49 +143,36 @@ function CategoryMenu() {
 
       {/* =================================================
           CATEGORY GRID
-          =================================================
-          
-          A two-column structure keeps the menu compact while
-          still providing enough room for future sub-category
-          expansion.
-      ================================================= */}
+          ================================================= */}
 
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-3">
 
-        {categoryGroups.map((category, index) => (
+        {categoryGroups.map((category) => (
 
-          <section
+          <div
             key={category.id}
-            className={`
-              px-7
-              py-6
+            className="
+              border-b
+              border-r
+              border-[var(--color-border)]
+              px-6
+              py-5
               transition-colors
               duration-200
               hover:bg-[var(--color-background)]
-
-              ${
-                index < 2
-                  ? "border-b border-[var(--color-border)]"
-                  : ""
-              }
-
-              ${
-                index % 2 === 0
-                  ? "border-r border-[var(--color-border)]"
-                  : ""
-              }
-            `}
+            "
           >
 
-            {/* Category heading */}
+            {/* Main category */}
 
             <Link
-              to={`/products?category=${category.id}`}
+              to={`/products?category=${encodeURIComponent(category.id)}`}
               className="
                 group
-                inline-flex
+                flex
                 items-center
-                text-[15px]
+                justify-between
+                text-sm
                 font-bold
                 text-[var(--color-navy)]
               "
@@ -237,8 +184,6 @@ function CategoryMenu() {
 
               <span
                 className="
-                  ml-2
-                  text-sm
                   text-[var(--color-blue)]
                   opacity-0
                   transition-all
@@ -253,12 +198,11 @@ function CategoryMenu() {
             </Link>
 
 
-            {/* Category description */}
+            {/* Description */}
 
             <p
               className="
                 mt-1.5
-                max-w-[300px]
                 text-xs
                 leading-5
                 text-[var(--color-text-muted)]
@@ -268,56 +212,27 @@ function CategoryMenu() {
             </p>
 
 
-            {/* Sub-category links */}
+            {/* Sub-category presentation */}
 
-            <div className="mt-4 space-y-1">
+            <div className="mt-3 space-y-1">
 
               {category.items.map((item) => (
 
-                <Link
-                  key={item.slug}
-                  to={`/products?category=${item.slug}`}
+                <p
+                  key={item}
                   className="
-                    group
-                    flex
-                    w-fit
-                    items-center
-                    gap-2
-                    rounded-md
-                    py-1
-                    text-sm
+                    text-xs
                     text-[var(--color-text-muted)]
-                    transition-all
-                    duration-200
-                    hover:text-[var(--color-blue)]
                   "
                 >
-
-                  {/* Small navigation indicator */}
-
-                  <span
-                    className="
-                      h-1
-                      w-1
-                      rounded-full
-                      bg-[var(--color-border)]
-                      transition-colors
-                      duration-200
-                      group-hover:bg-[var(--color-blue)]
-                    "
-                  />
-
-                  <span>
-                    {item.label}
-                  </span>
-
-                </Link>
+                  {item}
+                </p>
 
               ))}
 
             </div>
 
-          </section>
+          </div>
 
         ))}
 
@@ -325,7 +240,7 @@ function CategoryMenu() {
 
 
       {/* =================================================
-          VIEW ALL CATEGORIES
+          FOOTER
           ================================================= */}
 
       <div
@@ -333,8 +248,6 @@ function CategoryMenu() {
           flex
           items-center
           justify-between
-          border-t
-          border-[var(--color-border)]
           px-7
           py-4
         "
@@ -349,7 +262,7 @@ function CategoryMenu() {
               text-[var(--color-navy)]
             "
           >
-            Looking for something specific?
+            Explore the complete catalogue
           </p>
 
           <p
@@ -359,7 +272,7 @@ function CategoryMenu() {
               text-[var(--color-text-muted)]
             "
           >
-            Explore the complete medical equipment catalogue.
+            Browse all available medical equipment.
           </p>
 
         </div>
@@ -369,7 +282,7 @@ function CategoryMenu() {
           to="/products"
           className="
             group
-            inline-flex
+            flex
             items-center
             gap-2
             rounded-lg
@@ -384,9 +297,7 @@ function CategoryMenu() {
           "
         >
 
-          <span>
-            View all categories
-          </span>
+          View all products
 
           <span
             className="
