@@ -1,165 +1,68 @@
 /*
  * Profile Page
  * -------------------------------------------------------
- * Main customer account dashboard.
+ * Main customer profile page.
  *
- * Responsibilities:
- * - Display customer profile
- * - Display account sidebar
- * - Display order summary
- * - Display recent orders
+ * This page contains:
  *
- * Current structure:
- *
- * Profile.jsx
- *    │
- *    ├── AccountSidebar
- *    ├── ProfileSection
- *    ├── OrderSummary
- *    └── OrdersSection
+ * 1. Profile sidebar
+ * 2. Profile information
+ * 3. Order summary
+ * 4. Recent orders
  *
  * IMPORTANT:
- * This page currently uses frontend/demo order data.
+ * Orders are imported from ../data/orders.
  *
- * Later:
- *
- * Backend API
- *      ↓
- * Authenticated customer
- *      ↓
- * Real profile + order data
+ * We do NOT keep another local orders array here.
  */
 
 import Navbar from "../components/shared/Navbar";
 import AiAgent from "../components/shared/AiAgent";
 import Footer from "../components/shared/Footer";
 
-
-// =========================================================
-// ACCOUNT COMPONENTS
-// =========================================================
-
-// Actual sidebar file in this project.
 import AccountSidebar from "../components/Account/AccountSidebar";
-
-// Profile information section.
 import ProfileSection from "../components/Account/ProfileSection";
 
-
-// =========================================================
-// ORDER COMPONENTS
-// =========================================================
-
-// Order summary is inside the Orders folder.
 import OrderSummary from "../components/Profile/Orders/OrderSummary";
-
-// Recent order list.
 import OrdersSection from "../components/Profile/Orders/OrdersSection";
 
-
-// =========================================================
-// TEMPORARY DEMO ORDERS
-// =========================================================
-//
-// These orders are only for frontend UI development.
-//
-// Later they will come from:
-// GET /api/orders
-//
-
-const orders = [
-
-  {
-    id: "ORD-1001",
-    orderNumber: "MSI-1001",
-    date: "2026-09-28",
-
-    product: {
-      name: "Advanced Patient Monitoring System",
-      image: "/products/patient-monitor.png",
-    },
-
-    quantity: 1,
-    amount: 85000,
-    status: "delivered",
-  },
-
-
-  {
-    id: "ORD-1002",
-    orderNumber: "MSI-1002",
-    date: "2026-09-30",
-
-    product: {
-      name: "ICU Ventilator Pro",
-      image: "/products/icu-ventilator.png",
-    },
-
-    quantity: 2,
-    amount: 145000,
-    status: "shipped",
-  },
-
-
-  {
-    id: "ORD-1003",
-    orderNumber: "MSI-1003",
-    date: "2026-10-01",
-
-    product: {
-      name: "Digital ECG Machine",
-      image: "/products/digital-ecg.png",
-    },
-
-    quantity: 1,
-    amount: 42000,
-    status: "processing",
-  },
-
-];
-
+import { orders } from "../data/orders";
 
 
 function Profile() {
 
-  /*
-   * =======================================================
-   * ORDER SUMMARY CALCULATIONS
-   * =======================================================
-   */
+  // =======================================================
+  // ORDER STATISTICS
+  // =======================================================
 
-  // Total number of orders.
+  /*
+   * Total number of orders.
+   */
   const totalOrders = orders.length;
 
 
-  // Orders which are still active.
-  //
-  // Delivered and cancelled orders are not considered
-  // active.
+  /*
+   * Active orders are orders which are not yet delivered
+   * or cancelled.
+   */
   const activeOrders = orders.filter(
-    (order) => {
-
-      const status = String(order.status || "")
-        .toLowerCase();
-
-      return (
-        status !== "delivered" &&
-        status !== "cancelled"
-      );
-
-    }
-  ).length;
-
-
-  // Total delivered orders.
-  const deliveredOrders = orders.filter(
     (order) =>
-      String(order.status || "").toLowerCase() ===
-      "delivered"
+      order.status !== "delivered" &&
+      order.status !== "cancelled"
   ).length;
 
 
-  // Total amount spent across all orders.
+  /*
+   * Number of successfully delivered orders.
+   */
+  const deliveredOrders = orders.filter(
+    (order) => order.status === "delivered"
+  ).length;
+
+
+  /*
+   * Total amount spent across all orders.
+   */
   const totalSpending = orders.reduce(
     (total, order) =>
       total + Number(order.amount || 0),
@@ -167,53 +70,39 @@ function Profile() {
   );
 
 
+  // =======================================================
+  // PAGE
+  // =======================================================
+
   return (
+    <div className="min-h-screen bg-white">
 
-    <div className="min-h-screen bg-[#f8fbff]">
-
-
-      {/* =================================================
-          GLOBAL NAVBAR
-          ================================================= */}
-
+      {/* Global navigation */}
       <Navbar />
 
 
-      <main>
+      <main className="bg-[#f8fbff]">
 
-
-        {/* =================================================
-            PAGE HEADER
-            ================================================= */}
-
-        <section
+        <div
           className="
-            border-b
-            border-slate-100
-            bg-white
+            mx-auto
+            max-w-[1440px]
             px-4
-            py-10
+            py-8
             sm:px-6
-            sm:py-12
             lg:px-8
           "
         >
 
-          <div
-            className="
-              mx-auto
-              max-w-[1440px]
-            "
-          >
+          {/* =================================================
+              PAGE HEADER
+              ================================================= */}
 
-            {/* Small section label */}
+          <div className="mb-8">
 
-            <div
+            <p
               className="
-                mb-3
-                flex
-                items-center
-                gap-2
+                mb-2
                 text-xs
                 font-bold
                 uppercase
@@ -221,22 +110,8 @@ function Profile() {
                 text-[#1769d1]
               "
             >
-
-              <span
-                className="
-                  h-1.5
-                  w-1.5
-                  rounded-full
-                  bg-[#1769d1]
-                "
-              />
-
               My Account
-
-            </div>
-
-
-            {/* Page title */}
+            </p>
 
             <h1
               className="
@@ -244,91 +119,50 @@ function Profile() {
                 font-bold
                 tracking-tight
                 text-[#102a4c]
-                sm:text-4xl
               "
             >
-              Profile Dashboard
+              My Profile
             </h1>
 
-
-            {/* Description */}
-
-            <p
-              className="
-                mt-3
-                max-w-2xl
-                text-sm
-                leading-6
-                text-slate-500
-                sm:text-base
-              "
-            >
-              Manage your profile, review your orders and
-              keep track of your medical equipment purchases.
+            <p className="mt-2 text-sm text-slate-500">
+              Manage your profile information and view your
+              recent medical equipment orders.
             </p>
 
           </div>
 
-        </section>
 
-
-        {/* =================================================
-            PROFILE DASHBOARD
-            ================================================= */}
-
-        <section
-          className="
-            px-4
-            py-8
-            sm:px-6
-            sm:py-10
-            lg:px-8
-            lg:py-12
-          "
-        >
+          {/* =================================================
+              PROFILE LAYOUT
+              ================================================= */}
 
           <div
             className="
-              mx-auto
               grid
-              max-w-[1440px]
+              grid-cols-1
               gap-6
-              lg:grid-cols-[270px_minmax(0,1fr)]
-              lg:items-start
+              lg:grid-cols-[260px_minmax(0,1fr)]
             "
           >
 
-
             {/* =================================================
-                ACCOUNT SIDEBAR
+                SIDEBAR
                 ================================================= */}
 
             <AccountSidebar />
 
 
             {/* =================================================
-                MAIN ACCOUNT CONTENT
+                MAIN PROFILE CONTENT
                 ================================================= */}
 
-            <div
-              className="
-                min-w-0
-                space-y-8
-              "
-            >
+            <div className="min-w-0 space-y-6">
 
-
-              {/* =================================================
-                  PROFILE INFORMATION
-                  ================================================= */}
-
+              {/* Profile information */}
               <ProfileSection />
 
 
-              {/* =================================================
-                  ORDER SUMMARY
-                  ================================================= */}
-
+              {/* Order statistics */}
               <OrderSummary
                 totalOrders={totalOrders}
                 activeOrders={activeOrders}
@@ -337,40 +171,26 @@ function Profile() {
               />
 
 
-              {/* =================================================
-                  RECENT ORDERS
-                  ================================================= */}
-
-              <OrdersSection
-                orders={orders}
-              />
-
+              {/* Recent orders */}
+              <OrdersSection orders={orders} />
 
             </div>
 
           </div>
 
-        </section>
+        </div>
 
       </main>
 
 
-      {/* =================================================
-          FLOATING AI ASSISTANT
-          ================================================= */}
-
+      {/* Floating AI assistant */}
       <AiAgent />
 
 
-      {/* =================================================
-          GLOBAL FOOTER
-          ================================================= */}
-
+      {/* Global footer */}
       <Footer />
 
-
     </div>
-
   );
 }
 

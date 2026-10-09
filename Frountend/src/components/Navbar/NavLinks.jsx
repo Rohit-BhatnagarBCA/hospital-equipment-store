@@ -4,16 +4,23 @@
  * Handles the primary navigation links displayed in the
  * desktop navbar.
  *
- * Why this component is separated from Navbar.jsx:
- * - Keeps the main Navbar component clean.
- * - Makes navigation easier to maintain.
- * - Allows individual navigation behavior to be expanded
- *   without making Navbar.jsx too large.
+ * Structure:
  *
- * Category-specific behavior is handled here by connecting
- * the Categories navigation item with CategoryMenu.jsx.
+ * Products
+ * Categories
+ * Sales Analytics
+ * AI Assistant
+ *
+ * IMPORTANT:
+ * - Products is a normal React Router route.
+ * - Categories uses the existing CategoryMenu component.
+ * - Sales Analytics and AI Assistant are kept as
+ *   "coming soon" actions until their actual pages/routes
+ *   are created.
+ *
+ * This prevents the navbar from sending the user to
+ * non-existing routes.
  */
-
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -22,43 +29,60 @@ import { ChevronDown } from "lucide-react";
 import CategoryMenu from "./CategoryMenu";
 
 
-/*
- * Navigation configuration
- * -------------------------------------------------------
- * Keeping navigation items in a data structure allows us
- * to add or remove normal navigation links without
- * rewriting the main navigation JSX.
- *
- * Categories is handled separately because it has an
- * interactive dropdown menu.
- */
-const navigationLinks = [
-  {
-    label: "Products",
-    path: "/products",
-  },
-
-  {
-    label: "Sales Analytics",
-    path: "/sales-analytics",
-  },
-
-  {
-    label: "AI Assistant",
-    path: "/ai-assistant",
-  },
-];
-
-
 function NavLinks() {
 
   /*
-   * Controls whether the category menu is visible.
+   * =======================================================
+   * CATEGORY DROPDOWN STATE
+   * =======================================================
    *
-   * This state is kept locally because the category menu
-   * only belongs to the navigation component.
+   * Controls whether the Categories dropdown is visible.
    */
+
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+
+
+  /*
+   * =======================================================
+   * NAVIGATION ITEM STYLES
+   * =======================================================
+   *
+   * Keeping the common classes in one place prevents us
+   * from repeating the same long Tailwind classes.
+   */
+
+  const navItemClasses = `
+    group
+    flex
+    items-center
+    gap-1.5
+    rounded-lg
+    px-3
+    py-2
+    text-sm
+    font-medium
+    text-[var(--color-text-muted)]
+    transition-all
+    duration-200
+    hover:bg-[var(--color-blue-light)]
+    hover:text-[var(--color-navy)]
+  `;
+
+
+  /*
+   * =======================================================
+   * COMING SOON HANDLER
+   * =======================================================
+   *
+   * Sales Analytics and AI Assistant pages are not part
+   * of the current AppRoutes yet.
+   *
+   * We don't create fake routes.
+   */
+
+  const handleComingSoon = (feature) => {
+    console.log(`${feature} page coming soon`);
+  };
 
 
   return (
@@ -73,31 +97,19 @@ function NavLinks() {
     >
 
       {/* =================================================
-          PRODUCTS LINK
+          PRODUCTS
           =================================================
           
-          Products is a normal application route and does
-          not need a dropdown menu.
+          Products is already a real route:
+
+          /products
+
+          So this is a normal React Router Link.
       ================================================= */}
 
       <Link
         to="/products"
-        className="
-          group
-          flex
-          items-center
-          gap-1.5
-          rounded-lg
-          px-3
-          py-2
-          text-sm
-          font-medium
-          text-[var(--color-text-muted)]
-          transition-all
-          duration-200
-          hover:bg-[var(--color-blue-light)]
-          hover:text-[var(--color-navy)]
-        "
+        className={navItemClasses}
       >
         Products
       </Link>
@@ -107,13 +119,9 @@ function NavLinks() {
           CATEGORIES
           =================================================
 
-          Categories uses an interactive menu instead of a
-          normal route link.
+          Categories does not navigate directly.
 
-          The wrapper controls both the navigation trigger
-          and the dropdown menu so the menu remains open
-          while the pointer moves from the trigger into the
-          menu.
+          It opens the existing CategoryMenu component.
       ================================================= */}
 
       <div
@@ -122,32 +130,21 @@ function NavLinks() {
         onMouseLeave={() => setIsCategoryOpen(false)}
       >
 
-        {/* Category trigger */}
+        {/* Category Trigger */}
 
         <button
           type="button"
           aria-haspopup="true"
           aria-expanded={isCategoryOpen}
-          onClick={() => setIsCategoryOpen((previous) => !previous)}
-          className="
-            group
-            flex
-            items-center
-            gap-1.5
-            rounded-lg
-            px-3
-            py-2
-            text-sm
-            font-medium
-            text-[var(--color-text-muted)]
-            transition-all
-            duration-200
-            hover:bg-[var(--color-blue-light)]
-            hover:text-[var(--color-navy)]
-          "
+          onClick={() =>
+            setIsCategoryOpen((previous) => !previous)
+          }
+          className={navItemClasses}
         >
 
-          Categories
+          <span>
+            Categories
+          </span>
 
           <ChevronDown
             size={14}
@@ -163,15 +160,8 @@ function NavLinks() {
 
 
         {/* =================================================
-            CATEGORY DROPDOWN
-            =================================================
-
-            The menu is rendered only while the category
-            navigation item is active.
-
-            "top-full" places the menu directly below the
-            navigation trigger.
-        ================================================= */}
+            CATEGORY MENU
+            ================================================= */}
 
         {isCategoryOpen && (
           <div
@@ -193,42 +183,49 @@ function NavLinks() {
 
 
       {/* =================================================
-          OTHER NAVIGATION LINKS
-          ================================================= */}
+          SALES ANALYTICS
+          =================================================
 
-      {navigationLinks.map((item) => (
+          IMPORTANT:
+          /sales-analytics route does not exist yet.
 
-        /*
-         * React Router's Link provides client-side
-         * navigation without a full browser reload.
-         */
-        <Link
-          key={item.label}
-          to={item.path}
-          className="
-            group
-            flex
-            items-center
-            gap-1.5
-            rounded-lg
-            px-3
-            py-2
-            text-sm
-            font-medium
-            text-[var(--color-text-muted)]
-            transition-all
-            duration-200
-            hover:bg-[var(--color-blue-light)]
-            hover:text-[var(--color-navy)]
-          "
-        >
-          {item.label}
-        </Link>
+          So don't use <Link> here right now.
+      ================================================= */}
 
-      ))}
+      <button
+        type="button"
+        onClick={() =>
+          handleComingSoon("Sales Analytics")
+        }
+        className={navItemClasses}
+      >
+        Sales Analytics
+      </button>
+
+
+      {/* =================================================
+          AI ASSISTANT
+          =================================================
+
+          IMPORTANT:
+          /ai-assistant route does not exist yet.
+
+          The floating AiAgent already exists separately.
+      ================================================= */}
+
+      <button
+        type="button"
+        onClick={() =>
+          handleComingSoon("AI Assistant")
+        }
+        className={navItemClasses}
+      >
+        AI Assistant
+      </button>
 
     </nav>
   );
 }
-  
+
+
 export default NavLinks;

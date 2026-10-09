@@ -1,31 +1,18 @@
 /*
- * ProfileOrderDetails
+ * Profile Order Details
  * -------------------------------------------------------
- * Displays complete information about a single customer
- * order.
+ * Displays complete information about one order.
  *
- * Responsibilities:
- * - Read order ID from URL
- * - Find the matching order
- * - Display order information
- * - Display product information
- * - Display payment summary
- * - Display delivery information
- * - Display order status
- * - Display order progress
+ * Route:
+ *
+ * /profile/orders/:orderId
+ *
+ * Example:
+ *
+ * /profile/orders/ORD-1001
  *
  * IMPORTANT:
- * This currently uses temporary local order data.
- *
- * Later:
- *
- * URL orderId
- *      ↓
- * Backend API
- *      ↓
- * Authenticated user's order
- *
- * The page structure can remain the same.
+ * Order data comes from the shared orders.js file.
  */
 
 import { Link, useParams } from "react-router-dom";
@@ -36,159 +23,37 @@ import Footer from "../../shared/Footer";
 
 import OrderStatus from "./OrderStatus";
 
-
-
-/*
- * =========================================================
- * TEMPORARY ORDER DATA
- * =========================================================
- *
- * This is temporary frontend/demo data.
- *
- * Later this data will come from the backend API.
- */
-
-const localOrders = [
-
-  {
-    id: "ORD-1001",
-    orderNumber: "MSI-1001",
-    date: "2026-09-28",
-
-    product: {
-      name: "Advanced Patient Monitoring System",
-      image: "/products/patient-monitor.png",
-      category: "Patient Monitoring",
-    },
-
-    quantity: 1,
-
-    amount: 85000,
-
-    status: "delivered",
-
-    paymentMethod: "UPI",
-
-    paymentStatus: "Paid",
-
-    deliveryAddress: {
-      name: "Rohit Bhatnagar",
-      address: "Indore, Madhya Pradesh",
-      phone: "+91 XXXXX XXXXX",
-    },
-  },
-
-
-  {
-    id: "ORD-1002",
-    orderNumber: "MSI-1002",
-    date: "2026-09-30",
-
-    product: {
-      name: "ICU Ventilator Pro",
-      image: "/products/icu-ventilator.png",
-      category: "Critical Care",
-    },
-
-    quantity: 2,
-
-    amount: 145000,
-
-    status: "shipped",
-
-    paymentMethod: "UPI",
-
-    paymentStatus: "Paid",
-
-    deliveryAddress: {
-      name: "Rohit Bhatnagar",
-      address: "Indore, Madhya Pradesh",
-      phone: "+91 XXXXX XXXXX",
-    },
-  },
-
-
-  {
-    id: "ORD-1003",
-    orderNumber: "MSI-1003",
-    date: "2026-10-01",
-
-    product: {
-      name: "Digital ECG Machine",
-      image: "/products/digital-ecg.png",
-      category: "Cardiology",
-    },
-
-    quantity: 1,
-
-    amount: 42000,
-
-    status: "processing",
-
-    paymentMethod: "UPI",
-
-    paymentStatus: "Paid",
-
-    deliveryAddress: {
-      name: "Rohit Bhatnagar",
-      address: "Indore, Madhya Pradesh",
-      phone: "+91 XXXXX XXXXX",
-    },
-  },
-
-];
-
+import { orders } from "../../../data/orders";
 
 
 function ProfileOrderDetails() {
 
-  /*
-   * =======================================================
-   * READ ORDER ID FROM URL
-   * =======================================================
-   *
-   * Route:
-   *
-   * /profile/orders/:orderId
-   */
+  // =======================================================
+  // GET ORDER ID FROM URL
+  // =======================================================
 
   const { orderId } = useParams();
 
 
+  // =======================================================
+  // FIND ORDER
+  // =======================================================
+
   /*
-   * =======================================================
-   * FIND ORDER
-   * =======================================================
-   *
-   * Normalize both values before comparing them.
-   *
-   * This prevents a small capitalization/spacing difference
-   * from causing an unnecessary "Order not found" state.
+   * Find the order whose ID matches the URL.
    */
-
-  const normalizedOrderId = String(orderId || "")
-    .trim()
-    .toLowerCase();
-
-
-  const order = localOrders.find(
-    (item) =>
-      String(item.id || "")
-        .trim()
-        .toLowerCase() === normalizedOrderId
+  const order = orders.find(
+    (item) => item.id === orderId
   );
 
 
-  /*
-   * =======================================================
-   * ORDER NOT FOUND
-   * =======================================================
-   */
+  // =======================================================
+  // ORDER NOT FOUND
+  // =======================================================
 
   if (!order) {
 
     return (
-
       <div className="min-h-screen bg-white">
 
         <Navbar />
@@ -200,56 +65,61 @@ function ProfileOrderDetails() {
             min-h-[60vh]
             items-center
             justify-center
+            bg-[#f8fbff]
             px-4
-            py-20
           "
         >
 
-          <div className="max-w-lg text-center">
+          <div className="text-center">
 
-            <p
+            <div
               className="
-                text-xs
-                font-bold
-                uppercase
-                tracking-[0.15em]
-                text-[#1769d1]
+                mx-auto
+                mb-5
+                flex
+                h-16
+                w-16
+                items-center
+                justify-center
+                rounded-full
+                bg-slate-100
+                text-2xl
               "
             >
-              Order not found
-            </p>
+              ?
+            </div>
 
 
             <h1
               className="
-                mt-3
-                text-3xl
+                text-2xl
                 font-bold
-                tracking-tight
                 text-[#102a4c]
               "
             >
-              We couldn't find this order
+              Order not found
             </h1>
 
 
             <p
               className="
-                mt-3
+                mx-auto
+                mt-2
+                max-w-md
                 text-sm
                 leading-6
                 text-slate-500
               "
             >
-              The order may have been removed or the
-              order ID may be incorrect.
+              We could not find an order with this order ID.
+              Please check the order number and try again.
             </p>
 
 
             <Link
               to="/profile/orders"
               className="
-                mt-7
+                mt-6
                 inline-flex
                 items-center
                 justify-center
@@ -258,14 +128,13 @@ function ProfileOrderDetails() {
                 px-5
                 py-3
                 text-sm
-                font-bold
+                font-semibold
                 text-white
-                transition-colors
-                duration-200
-                hover:bg-[#0d4fa8]
+                transition
+                hover:bg-[#1258b0]
               "
             >
-              Back to Orders
+              Back to My Orders
             </Link>
 
           </div>
@@ -273,302 +142,99 @@ function ProfileOrderDetails() {
         </main>
 
 
+        <AiAgent />
+
         <Footer />
 
       </div>
-
     );
   }
 
 
-  /*
-   * =======================================================
-   * SAFE ORDER VALUES
-   * =======================================================
-   *
-   * These fallbacks prevent the page from crashing when
-   * some backend fields are missing in the future.
-   */
+  // =======================================================
+  // SHIPPING ADDRESS
+  // =======================================================
 
-  const product = order.product || {};
-
-  const deliveryAddress = order.deliveryAddress || {};
-
-  const productName =
-    product.name || "Medical Equipment";
-
-  const productCategory =
-    product.category || "Medical Equipment";
-
-  const productImage =
-    product.image || product.images?.[0] || null;
+  const shippingAddress = order.shippingAddress;
 
 
-  /*
-   * =======================================================
-   * FORMAT DATE
-   * =======================================================
-   */
-
-  const parsedDate = order.date
-    ? new Date(order.date)
-    : null;
-
-
-  const formattedDate =
-    parsedDate && !Number.isNaN(parsedDate.getTime())
-      ? parsedDate.toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })
-      : "Date unavailable";
-
-
-  /*
-   * =======================================================
-   * FORMAT ORDER AMOUNT
-   * =======================================================
-   *
-   * IMPORTANT:
-   *
-   * amount represents the TOTAL ORDER AMOUNT.
-   *
-   * It is NOT treated as unit price.
-   */
-
-  const formattedAmount = Number(
-    order.amount || 0
-  ).toLocaleString("en-IN");
-
-
-  /*
-   * =======================================================
-   * NORMALIZE STATUS
-   * =======================================================
-   */
-
-  const normalizedStatus = String(
-    order.status || ""
-  )
-    .toLowerCase()
-    .trim();
-
-
-  /*
-   * =======================================================
-   * ORDER TIMELINE
-   * =======================================================
-   *
-   * The timeline is based on the current order status.
-   *
-   * Cancelled orders use a separate cancelled state.
-   */
-
-  const timelineSteps = [
-
-    {
-      title: "Order Placed",
-
-      description:
-        "Your order has been successfully placed.",
-
-      active: true,
-    },
-
-
-    {
-      title: "Order Confirmed",
-
-      description:
-        "Your order has been confirmed.",
-
-      active:
-        normalizedStatus === "confirmed" ||
-        normalizedStatus === "shipped" ||
-        normalizedStatus === "delivered",
-    },
-
-
-    {
-      title: "Shipped",
-
-      description:
-        "Your order has been handed over for delivery.",
-
-      active:
-        normalizedStatus === "shipped" ||
-        normalizedStatus === "delivered",
-    },
-
-
-    {
-      title: "Delivered",
-
-      description:
-        "Your order has been delivered successfully.",
-
-      active:
-        normalizedStatus === "delivered",
-    },
-
-  ];
-
-
-  /*
-   * =======================================================
-   * CANCELLED ORDER
-   * =======================================================
-   */
-
-  const isCancelled =
-    normalizedStatus === "cancelled";
-
-
-  /*
-   * =======================================================
-   * PAYMENT STATUS
-   * =======================================================
-   */
-
-  const paymentStatus =
-    order.paymentStatus || "Pending";
-
-  const paymentMethod =
-    order.paymentMethod || "Not specified";
-
+  // =======================================================
+  // PAGE
+  // =======================================================
 
   return (
-
-    <div className="min-h-screen bg-[#f8fbff]">
-
-      {/* =================================================
-          GLOBAL NAVBAR
-          ================================================= */}
+    <div className="min-h-screen bg-white">
 
       <Navbar />
 
 
-      <main>
-
-        {/* =================================================
-            BREADCRUMB
-            ================================================= */}
+      <main className="bg-[#f8fbff]">
 
         <div
           className="
-            border-b
-            border-slate-100
-            bg-white
+            mx-auto
+            max-w-[1200px]
             px-4
-            py-4
+            py-8
             sm:px-6
             lg:px-8
           "
         >
 
+          {/* =================================================
+              BREADCRUMB
+              ================================================= */}
+
           <div
             className="
-              mx-auto
+              mb-6
               flex
-              max-w-[1440px]
               flex-wrap
               items-center
               gap-2
               text-sm
+              text-slate-500
             "
           >
 
             <Link
-              to="/"
-              className="
-                text-slate-400
-                transition-colors
-                hover:text-[#1769d1]
-              "
-            >
-              Home
-            </Link>
-
-
-            <span className="text-slate-300">
-              /
-            </span>
-
-
-            <Link
               to="/profile"
-              className="
-                text-slate-400
-                transition-colors
-                hover:text-[#1769d1]
-              "
+              className="hover:text-[#1769d1]"
             >
               Profile
             </Link>
 
-
-            <span className="text-slate-300">
-              /
-            </span>
-
+            <span>/</span>
 
             <Link
               to="/profile/orders"
-              className="
-                text-slate-400
-                transition-colors
-                hover:text-[#1769d1]
-              "
+              className="hover:text-[#1769d1]"
             >
               Orders
             </Link>
 
+            <span>/</span>
 
-            <span className="text-slate-300">
-              /
-            </span>
-
-
-            <span className="font-medium text-[#102a4c]">
-              {order.orderNumber || order.id}
+            <span className="font-medium text-slate-700">
+              {order.orderNumber}
             </span>
 
           </div>
 
-        </div>
 
+          {/* =================================================
+              HEADER
+              ================================================= */}
 
-        {/* =================================================
-            PAGE CONTENT
-            ================================================= */}
-
-        <section
-          className="
-            px-4
-            py-8
-            sm:px-6
-            sm:py-10
-            lg:px-8
-            lg:py-12
-          "
-        >
-
-          <div className="mx-auto max-w-[1200px]">
-
-
-            {/* =================================================
-                PAGE HEADER
-                ================================================= */}
+          <div className="mb-6">
 
             <div
               className="
-                mb-8
                 flex
                 flex-col
                 gap-4
                 sm:flex-row
-                sm:items-end
+                sm:items-start
                 sm:justify-between
               "
             >
@@ -577,10 +243,11 @@ function ProfileOrderDetails() {
 
                 <p
                   className="
+                    mb-2
                     text-xs
                     font-bold
                     uppercase
-                    tracking-[0.14em]
+                    tracking-[0.16em]
                     text-[#1769d1]
                   "
                 >
@@ -590,7 +257,6 @@ function ProfileOrderDetails() {
 
                 <h1
                   className="
-                    mt-1
                     text-2xl
                     font-bold
                     tracking-tight
@@ -598,771 +264,406 @@ function ProfileOrderDetails() {
                     sm:text-3xl
                   "
                 >
-                  Order #{order.orderNumber || order.id}
+                  {order.orderNumber}
                 </h1>
 
 
-                <p
-                  className="
-                    mt-2
-                    text-sm
-                    text-slate-500
-                  "
-                >
-                  Placed on {formattedDate}
+                <p className="mt-2 text-sm text-slate-500">
+                  Placed on{" "}
+                  {new Date(order.date).toLocaleDateString(
+                    "en-IN",
+                    {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    }
+                  )}
                 </p>
 
               </div>
 
 
-              <OrderStatus
-                status={normalizedStatus}
-              />
-
-            </div>
-
-
-            {/* =================================================
-                MAIN GRID
-                ================================================= */}
-
-            <div
-              className="
-                grid
-                gap-6
-                lg:grid-cols-[1fr_340px]
-              "
-            >
-
-
-              {/* =================================================
-                  LEFT CONTENT
-                  ================================================= */}
-
-              <div className="space-y-6">
-
-
-                {/* =================================================
-                    PRODUCT CARD
-                    ================================================= */}
-
-                <section
-                  className="
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    p-5
-                    sm:p-6
-                  "
-                >
-
-                  <h2
-                    className="
-                      text-lg
-                      font-bold
-                      text-[#102a4c]
-                    "
-                  >
-                    Ordered Product
-                  </h2>
-
-
-                  <div
-                    className="
-                      mt-5
-                      flex
-                      flex-col
-                      gap-5
-                      sm:flex-row
-                      sm:items-center
-                    "
-                  >
-
-                    {/* Product image */}
-
-                    <div
-                      className="
-                        flex
-                        h-32
-                        w-32
-                        shrink-0
-                        items-center
-                        justify-center
-                        overflow-hidden
-                        rounded-xl
-                        bg-[#f7faff]
-                      "
-                    >
-
-                      {productImage ? (
-
-                        <img
-                          src={productImage}
-                          alt={productName}
-                          loading="lazy"
-                          className="
-                            h-full
-                            w-full
-                            object-contain
-                            p-3
-                          "
-                        />
-
-                      ) : (
-
-                        <span
-                          className="
-                            text-xs
-                            text-slate-400
-                          "
-                        >
-                          No image
-                        </span>
-
-                      )}
-
-                    </div>
-
-
-                    {/* Product information */}
-
-                    <div className="flex-1">
-
-                      <p
-                        className="
-                          text-xs
-                          font-bold
-                          uppercase
-                          tracking-[0.1em]
-                          text-[#1769d1]
-                        "
-                      >
-                        {productCategory}
-                      </p>
-
-
-                      <h3
-                        className="
-                          mt-2
-                          text-xl
-                          font-bold
-                          leading-7
-                          text-[#102a4c]
-                        "
-                      >
-                        {productName}
-                      </h3>
-
-
-                      <div
-                        className="
-                          mt-3
-                          flex
-                          flex-wrap
-                          gap-x-6
-                          gap-y-2
-                          text-sm
-                          text-slate-500
-                        "
-                      >
-
-                        <span>
-                          Quantity:{" "}
-                          <strong className="text-slate-700">
-                            {order.quantity || 1}
-                          </strong>
-                        </span>
-
-
-                        <span>
-                          Order total:{" "}
-                          <strong className="text-slate-700">
-                            ₹{formattedAmount}
-                          </strong>
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                </section>
-
-
-                {/* =================================================
-                    DELIVERY INFORMATION
-                    ================================================= */}
-
-                <section
-                  className="
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    p-5
-                    sm:p-6
-                  "
-                >
-
-                  <h2
-                    className="
-                      text-lg
-                      font-bold
-                      text-[#102a4c]
-                    "
-                  >
-                    Delivery Information
-                  </h2>
-
-
-                  <div
-                    className="
-                      mt-5
-                      rounded-xl
-                      border
-                      border-slate-100
-                      bg-slate-50
-                      p-4
-                    "
-                  >
-
-                    <p
-                      className="
-                        text-sm
-                        font-bold
-                        text-[#102a4c]
-                      "
-                    >
-                      {deliveryAddress.name || "Customer"}
-                    </p>
-
-
-                    <p
-                      className="
-                        mt-2
-                        text-sm
-                        leading-6
-                        text-slate-500
-                      "
-                    >
-                      {deliveryAddress.address ||
-                        "Delivery address unavailable"}
-                    </p>
-
-
-                    <p
-                      className="
-                        mt-2
-                        text-sm
-                        text-slate-500
-                      "
-                    >
-                      {deliveryAddress.phone ||
-                        "Phone number unavailable"}
-                    </p>
-
-                  </div>
-
-                </section>
-
-
-                {/* =================================================
-                    ORDER PROGRESS
-                    ================================================= */}
-
-                <section
-                  className="
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    p-5
-                    sm:p-6
-                  "
-                >
-
-                  <h2
-                    className="
-                      text-lg
-                      font-bold
-                      text-[#102a4c]
-                    "
-                  >
-                    Order Progress
-                  </h2>
-
-
-                  {isCancelled ? (
-
-                    /*
-                     * Cancelled orders do not continue through
-                     * the normal shipping/delivery timeline.
-                     */
-
-                    <div
-                      className="
-                        mt-6
-                        rounded-xl
-                        border
-                        border-red-100
-                        bg-red-50
-                        p-4
-                      "
-                    >
-
-                      <div
-                        className="
-                          flex
-                          items-center
-                          gap-3
-                        "
-                      >
-
-                        <span
-                          className="
-                            flex
-                            h-9
-                            w-9
-                            items-center
-                            justify-center
-                            rounded-full
-                            bg-red-100
-                            text-sm
-                            font-bold
-                            text-red-600
-                          "
-                        >
-                          !
-                        </span>
-
-
-                        <div>
-
-                          <p
-                            className="
-                              text-sm
-                              font-bold
-                              text-red-700
-                            "
-                          >
-                            Order Cancelled
-                          </p>
-
-
-                          <p
-                            className="
-                              mt-1
-                              text-xs
-                              leading-5
-                              text-red-600
-                            "
-                          >
-                            This order has been cancelled and
-                            will not continue through delivery.
-                          </p>
-
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  ) : (
-
-                    <div className="mt-6">
-
-                      {timelineSteps.map(
-                        (step, index) => (
-
-                          <div
-                            key={step.title}
-                            className="flex gap-4"
-                          >
-
-                            {/* Timeline indicator */}
-
-                            <div
-                              className="
-                                flex
-                                flex-col
-                                items-center
-                              "
-                            >
-
-                              <div
-                                className={`
-                                  flex
-                                  h-8
-                                  w-8
-                                  shrink-0
-                                  items-center
-                                  justify-center
-                                  rounded-full
-                                  text-xs
-                                  font-bold
-                                  ${
-                                    step.active
-                                      ? "bg-[#1769d1] text-white"
-                                      : "bg-slate-100 text-slate-400"
-                                  }
-                                `}
-                              >
-                                {index + 1}
-                              </div>
-
-
-                              {index <
-                                timelineSteps.length - 1 && (
-
-                                <div
-                                  className={`
-                                    my-1
-                                    h-10
-                                    w-px
-                                    ${
-                                      timelineSteps[index + 1]
-                                        .active
-                                        ? "bg-[#1769d1]"
-                                        : "bg-slate-200"
-                                    }
-                                  `}
-                                />
-
-                              )}
-
-                            </div>
-
-
-                            {/* Timeline content */}
-
-                            <div className="pb-4">
-
-                              <p
-                                className={`
-                                  text-sm
-                                  font-bold
-                                  ${
-                                    step.active
-                                      ? "text-[#102a4c]"
-                                      : "text-slate-400"
-                                  }
-                                `}
-                              >
-                                {step.title}
-                              </p>
-
-
-                              <p
-                                className="
-                                  mt-1
-                                  text-xs
-                                  leading-5
-                                  text-slate-500
-                                "
-                              >
-                                {step.description}
-                              </p>
-
-                            </div>
-
-                          </div>
-
-                        )
-                      )}
-
-                    </div>
-
-                  )}
-
-                </section>
-
-              </div>
-
-
-              {/* =================================================
-                  RIGHT SIDEBAR
-                  ================================================= */}
-
-              <aside className="space-y-6">
-
-
-                {/* =================================================
-                    PAYMENT SUMMARY
-                    ================================================= */}
-
-                <section
-                  className="
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    p-5
-                    sm:p-6
-                  "
-                >
-
-                  <h2
-                    className="
-                      text-lg
-                      font-bold
-                      text-[#102a4c]
-                    "
-                  >
-                    Payment Summary
-                  </h2>
-
-
-                  <div className="mt-5 space-y-4">
-
-                    <div
-                      className="
-                        flex
-                        items-center
-                        justify-between
-                        text-sm
-                      "
-                    >
-
-                      <span className="text-slate-500">
-                        Product total
-                      </span>
-
-
-                      <span className="font-semibold text-slate-700">
-                        ₹{formattedAmount}
-                      </span>
-
-                    </div>
-
-
-                    <div
-                      className="
-                        flex
-                        items-center
-                        justify-between
-                        text-sm
-                      "
-                    >
-
-                      <span className="text-slate-500">
-                        Delivery
-                      </span>
-
-
-                      <span className="font-semibold text-green-600">
-                        Free
-                      </span>
-
-                    </div>
-
-
-                    <div className="border-t border-slate-100 pt-4">
-
-                      <div
-                        className="
-                          flex
-                          items-center
-                          justify-between
-                        "
-                      >
-
-                        <span
-                          className="
-                            text-sm
-                            font-bold
-                            text-[#102a4c]
-                          "
-                        >
-                          Total
-                        </span>
-
-
-                        <span
-                          className="
-                            text-xl
-                            font-bold
-                            text-[#102a4c]
-                          "
-                        >
-                          ₹{formattedAmount}
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-
-                  {/* Payment status */}
-
-                  <div
-                    className={`
-                      mt-5
-                      rounded-xl
-                      px-4
-                      py-3
-                      ${
-                        String(paymentStatus)
-                          .toLowerCase() === "paid"
-                          ? "bg-green-50"
-                          : "bg-amber-50"
-                      }
-                    `}
-                  >
-
-                    <p
-                      className={`
-                        text-xs
-                        font-bold
-                        ${
-                          String(paymentStatus)
-                            .toLowerCase() === "paid"
-                            ? "text-green-700"
-                            : "text-amber-700"
-                        }
-                      `}
-                    >
-                      Payment {paymentStatus}
-                    </p>
-
-
-                    <p
-                      className={`
-                        mt-1
-                        text-xs
-                        ${
-                          String(paymentStatus)
-                            .toLowerCase() === "paid"
-                            ? "text-green-600"
-                            : "text-amber-600"
-                        }
-                      `}
-                    >
-                      Paid using {paymentMethod}
-                    </p>
-
-                  </div>
-
-                </section>
-
-
-                {/* =================================================
-                    NEED HELP
-                    ================================================= */}
-
-                <section
-                  className="
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    p-5
-                    sm:p-6
-                  "
-                >
-
-                  <h2
-                    className="
-                      text-base
-                      font-bold
-                      text-[#102a4c]
-                    "
-                  >
-                    Need help?
-                  </h2>
-
-
-                  <p
-                    className="
-                      mt-2
-                      text-sm
-                      leading-6
-                      text-slate-500
-                    "
-                  >
-                    If you have any questions about this
-                    order, our support team can help.
-                  </p>
-
-
-                  <button
-                    type="button"
-                    className="
-                      mt-4
-                      w-full
-                      rounded-xl
-                      border
-                      border-slate-200
-                      bg-white
-                      px-4
-                      py-3
-                      text-sm
-                      font-bold
-                      text-[#102a4c]
-                      transition-all
-                      duration-200
-                      hover:border-blue-200
-                      hover:bg-blue-50
-                      hover:text-[#1769d1]
-                    "
-                  >
-                    Contact Support
-                  </button>
-
-                </section>
-
-
-                {/* =================================================
-                    BACK TO ORDERS
-                    ================================================= */}
-
-                <Link
-                  to="/profile/orders"
-                  className="
-                    flex
-                    w-full
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-[#1769d1]
-                    px-4
-                    py-3
-                    text-sm
-                    font-bold
-                    text-white
-                    transition-all
-                    duration-200
-                    hover:bg-[#0d4fa8]
-                  "
-                >
-                  Back to Orders
-                </Link>
-
-              </aside>
+              <OrderStatus status={order.status} />
 
             </div>
 
           </div>
 
-        </section>
+
+          {/* =================================================
+              ORDER PRODUCT
+              ================================================= */}
+
+          <section
+            className="
+              mb-6
+              rounded-2xl
+              border
+              border-slate-200
+              bg-white
+              p-5
+              shadow-sm
+              sm:p-6
+            "
+          >
+
+            <h2
+              className="
+                mb-5
+                text-lg
+                font-bold
+                text-[#102a4c]
+              "
+            >
+              Product
+            </h2>
+
+
+            <div
+              className="
+                flex
+                flex-col
+                gap-5
+                sm:flex-row
+                sm:items-center
+              "
+            >
+
+              {/* Product image */}
+
+              <div
+                className="
+                  flex
+                  h-32
+                  w-full
+                  shrink-0
+                  items-center
+                  justify-center
+                  overflow-hidden
+                  rounded-xl
+                  bg-slate-50
+                  sm:w-32
+                "
+              >
+
+                <img
+                  src={order.product.image}
+                  alt={order.product.name}
+                  className="
+                    h-full
+                    w-full
+                    object-contain
+                    p-3
+                  "
+                />
+
+              </div>
+
+
+              {/* Product information */}
+
+              <div className="min-w-0 flex-1">
+
+                <p
+                  className="
+                    mb-1
+                    text-xs
+                    font-semibold
+                    uppercase
+                    tracking-wide
+                    text-[#1769d1]
+                  "
+                >
+                  {order.product.category}
+                </p>
+
+
+                <h3
+                  className="
+                    text-lg
+                    font-bold
+                    text-[#102a4c]
+                  "
+                >
+                  {order.product.name}
+                </h3>
+
+
+                <p className="mt-2 text-sm text-slate-500">
+                  Quantity:{" "}
+                  <span className="font-semibold text-slate-700">
+                    {order.quantity}
+                  </span>
+                </p>
+
+              </div>
+
+
+              {/* Order amount */}
+
+              <div className="sm:text-right">
+
+                <p className="text-xs text-slate-500">
+                  Order total
+                </p>
+
+                <p
+                  className="
+                    mt-1
+                    text-xl
+                    font-bold
+                    text-[#102a4c]
+                  "
+                >
+                  ₹{Number(order.amount).toLocaleString("en-IN")}
+                </p>
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+          {/* =================================================
+              ORDER INFORMATION GRID
+              ================================================= */}
+
+          <div
+            className="
+              grid
+              grid-cols-1
+              gap-6
+              lg:grid-cols-2
+            "
+          >
+
+            {/* =================================================
+                DELIVERY ADDRESS
+                ================================================= */}
+
+            <section
+              className="
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                p-5
+                shadow-sm
+                sm:p-6
+              "
+            >
+
+              <h2
+                className="
+                  mb-4
+                  text-lg
+                  font-bold
+                  text-[#102a4c]
+                "
+              >
+                Delivery Address
+              </h2>
+
+
+              {shippingAddress ? (
+                <div
+                  className="
+                    text-sm
+                    leading-7
+                    text-slate-600
+                  "
+                >
+
+                  <p className="font-semibold text-slate-800">
+                    {shippingAddress.name}
+                  </p>
+
+                  <p>
+                    {shippingAddress.addressLine1}
+                  </p>
+
+                  <p>
+                    {shippingAddress.addressLine2}
+                  </p>
+
+                  <p>
+                    PIN: {shippingAddress.pincode}
+                  </p>
+
+                  <p>
+                    {shippingAddress.country}
+                  </p>
+
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">
+                  Shipping address unavailable.
+                </p>
+              )}
+
+            </section>
+
+
+            {/* =================================================
+                PAYMENT
+                ================================================= */}
+
+            <section
+              className="
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                p-5
+                shadow-sm
+                sm:p-6
+              "
+            >
+
+              <h2
+                className="
+                  mb-4
+                  text-lg
+                  font-bold
+                  text-[#102a4c]
+                "
+              >
+                Payment
+              </h2>
+
+
+              <div className="space-y-3 text-sm">
+
+                <div className="flex justify-between gap-4">
+
+                  <span className="text-slate-500">
+                    Payment method
+                  </span>
+
+                  <span className="font-semibold text-slate-700">
+                    {order.paymentMethod}
+                  </span>
+
+                </div>
+
+
+                <div className="flex justify-between gap-4">
+
+                  <span className="text-slate-500">
+                    Payment status
+                  </span>
+
+                  <span
+                    className="
+                      font-semibold
+                      text-emerald-600
+                    "
+                  >
+                    {order.paymentStatus}
+                  </span>
+
+                </div>
+
+
+                <div
+                  className="
+                    flex
+                    justify-between
+                    gap-4
+                    border-t
+                    border-slate-100
+                    pt-3
+                  "
+                >
+
+                  <span className="font-medium text-slate-600">
+                    Total
+                  </span>
+
+                  <span
+                    className="
+                      font-bold
+                      text-[#102a4c]
+                    "
+                  >
+                    ₹{Number(order.amount).toLocaleString("en-IN")}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </section>
+
+          </div>
+
+
+          {/* =================================================
+              ACTIONS
+              ================================================= */}
+
+          <div className="mt-6 flex flex-wrap gap-3">
+
+            <Link
+              to="/profile/orders"
+              className="
+                inline-flex
+                items-center
+                justify-center
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                px-5
+                py-3
+                text-sm
+                font-semibold
+                text-slate-700
+                transition
+                hover:border-blue-200
+                hover:text-[#1769d1]
+              "
+            >
+              Back to Orders
+            </Link>
+
+
+            <Link
+              to="/profile"
+              className="
+                inline-flex
+                items-center
+                justify-center
+                rounded-xl
+                bg-[#1769d1]
+                px-5
+                py-3
+                text-sm
+                font-semibold
+                text-white
+                transition
+                hover:bg-[#1258b0]
+              "
+            >
+              Go to Profile
+            </Link>
+
+          </div>
+
+        </div>
 
       </main>
 
 
       {/* Floating AI assistant */}
-
       <AiAgent />
 
 
       {/* Global footer */}
-
       <Footer />
 
     </div>
-
   );
 }
 

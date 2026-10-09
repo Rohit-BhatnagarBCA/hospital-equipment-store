@@ -1,24 +1,15 @@
 /*
- * ProfileSidebar
+ * Account Sidebar
  * -------------------------------------------------------
- * Reusable navigation sidebar for the user's profile area.
+ * Navigation for customer account pages.
  *
- * Responsibilities:
- * - Display profile navigation
- * - Highlight the active section
- * - Provide navigation to profile-related pages
- * - Keep profile navigation separate from ProfileSection
+ * Currently available:
  *
- * IMPORTANT:
- * This component does NOT contain user authentication logic.
+ * /profile
+ * /profile/orders
  *
- * Future:
- * - Active route handling
- * - Protected routes
- * - Orders page
- * - Saved products
- * - Security settings
- * - Logout API
+ * Saved Products, Security and Account Settings will be
+ * added later when their actual pages are created.
  */
 
 import { NavLink } from "react-router-dom";
@@ -26,165 +17,88 @@ import { NavLink } from "react-router-dom";
 import {
   UserRound,
   ShoppingBag,
-  Heart,
-  ShieldCheck,
-  Settings,
   LogOut,
 } from "lucide-react";
 
 
-/*
- * =========================================================
- * PROFILE NAVIGATION
- * =========================================================
- *
- * Keeping navigation items inside a data structure makes
- * the sidebar easier to maintain.
- *
- * New profile sections can be added without rewriting
- * the complete JSX structure.
- */
+function AccountSidebar() {
 
-const profileNavigation = [
-  {
-    label: "Profile Overview",
-    path: "/profile",
-    icon: UserRound,
-  },
+  // =======================================================
+  // VALID PROFILE NAVIGATION
+  // =======================================================
 
-  {
-    label: "My Orders",
-    path: "/profile/orders",
-    icon: ShoppingBag,
-  },
+  const profileNavigation = [
+    {
+      label: "Profile Overview",
+      path: "/profile",
+      icon: UserRound,
+    },
 
-  {
-    label: "Saved Products",
-    path: "/profile/saved",
-    icon: Heart,
-  },
-
-  {
-    label: "Security",
-    path: "/profile/security",
-    icon: ShieldCheck,
-  },
-
-  {
-    label: "Account Settings",
-    path: "/profile/settings",
-    icon: Settings,
-  },
-];
+    {
+      label: "My Orders",
+      path: "/profile/orders",
+      icon: ShoppingBag,
+    },
+  ];
 
 
-function ProfileSidebar() {
-  /*
-   * =======================================================
-   * LOGOUT HANDLER
-   * =======================================================
-   *
-   * This is only a placeholder for now.
-   *
-   * Later this will call the authentication system:
-   *
-   * logout()
-   *      ↓
-   * Backend
-   *      ↓
-   * Session / token removed
-   *      ↓
-   * Redirect to login
-   *
-   * We are intentionally NOT putting authentication logic
-   * directly inside this UI component yet.
-   */
+  // =======================================================
+  // LOGOUT
+  // =======================================================
 
   const handleLogout = () => {
-    console.log("Logout clicked");
 
     /*
-     * Future:
+     * Authentication is not connected yet.
      *
-     * await logout();
-     * navigate("/login");
+     * Later this function will:
+     *
+     * 1. Clear authentication token
+     * 2. Clear user session
+     * 3. Redirect to login
+     *
+     * For now we only keep the handler ready.
      */
+
+    console.log("Logout clicked");
+
   };
 
+
+  // =======================================================
+  // UI
+  // =======================================================
 
   return (
     <aside
       className="
-        w-full
+        h-fit
         rounded-2xl
         border
         border-slate-200
         bg-white
+        p-3
         shadow-sm
-        lg:w-[270px]
-        lg:shrink-0
       "
     >
 
       {/* =================================================
-          PROFILE SIDEBAR HEADER
+          PROFILE LABEL
           ================================================= */}
 
-      <div className="border-b border-slate-100 p-5">
-
-        <div className="flex items-center gap-3">
-
-          {/* User avatar */}
-
-          <div
-            className="
-              flex
-              h-12
-              w-12
-              shrink-0
-              items-center
-              justify-center
-              rounded-xl
-              bg-[#102a4c]
-              text-sm
-              font-bold
-              text-white
-            "
-          >
-            RB
-          </div>
-
-
-          {/* User information */}
-
-          <div className="min-w-0">
-
-            <h2
-              className="
-                truncate
-                text-sm
-                font-bold
-                text-[#102a4c]
-              "
-            >
-              Rohit Bhatnagar
-            </h2>
-
-            <p
-              className="
-                mt-0.5
-                truncate
-                text-xs
-                text-slate-500
-              "
-            >
-              Sales Analyst
-            </p>
-
-          </div>
-
-        </div>
-
+      <div
+        className="
+          mb-2
+          px-3
+          py-2
+          text-xs
+          font-bold
+          uppercase
+          tracking-[0.14em]
+          text-slate-400
+        "
+      >
+        My Account
       </div>
 
 
@@ -192,144 +106,101 @@ function ProfileSidebar() {
           NAVIGATION
           ================================================= */}
 
-      <nav
-        aria-label="Profile navigation"
-        className="p-3"
-      >
+      <nav className="space-y-1">
 
-        <p
-          className="
-            mb-2
-            px-3
-            py-2
-            text-[10px]
-            font-bold
-            uppercase
-            tracking-[0.14em]
-            text-slate-400
-          "
-        >
-          Account
-        </p>
+        {profileNavigation.map((item) => {
 
+          const Icon = item.icon;
 
-        <div className="space-y-1">
-
-          {profileNavigation.map((item) => {
-
-            const Icon = item.icon;
-
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === "/profile"}
-                className={({ isActive }) => `
-                  group
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === "/profile"}
+              className={({ isActive }) =>
+                `
                   flex
                   items-center
                   gap-3
                   rounded-xl
                   px-3
-                  py-2.5
+                  py-3
                   text-sm
-                  font-medium
-                  transition-all
-                  duration-200
+                  font-semibold
+                  transition
 
                   ${
                     isActive
                       ? `
-                        bg-[#eaf3ff]
+                        bg-[#eef6ff]
                         text-[#1769d1]
                       `
                       : `
                         text-slate-600
                         hover:bg-slate-50
-                        hover:text-[#102a4c]
+                        hover:text-[#1769d1]
                       `
                   }
-                `}
-              >
+                `
+              }
+            >
 
-                {({ isActive }) => (
-                  <>
-                    <Icon
-                      size={18}
-                      strokeWidth={isActive ? 2.2 : 1.8}
-                      className="
-                        shrink-0
-                        transition-transform
-                        duration-200
-                        group-hover:scale-105
-                      "
-                    />
+              <Icon size={18} />
 
-                    <span>
-                      {item.label}
-                    </span>
-                  </>
-                )}
+              <span>
+                {item.label}
+              </span>
 
-              </NavLink>
-            );
+            </NavLink>
+          );
 
-          })}
-
-        </div>
+        })}
 
       </nav>
+
+
+      {/* =================================================
+          DIVIDER
+          ================================================= */}
+
+      <div className="my-3 border-t border-slate-100" />
 
 
       {/* =================================================
           LOGOUT
           ================================================= */}
 
-      <div className="border-t border-slate-100 p-3">
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="
+          flex
+          w-full
+          items-center
+          gap-3
+          rounded-xl
+          px-3
+          py-3
+          text-sm
+          font-semibold
+          text-slate-600
+          transition
+          hover:bg-red-50
+          hover:text-red-600
+        "
+      >
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="
-            group
-            flex
-            w-full
-            items-center
-            gap-3
-            rounded-xl
-            px-3
-            py-2.5
-            text-sm
-            font-medium
-            text-slate-600
-            transition-all
-            duration-200
-            hover:bg-red-50
-            hover:text-red-600
-          "
-        >
+        <LogOut size={18} />
 
-          <LogOut
-            size={18}
-            strokeWidth={1.8}
-            className="
-              transition-transform
-              duration-200
-              group-hover:-translate-x-0.5
-            "
-          />
+        <span>
+          Logout
+        </span>
 
-          <span>
-            Logout
-          </span>
-
-        </button>
-
-      </div>
+      </button>
 
     </aside>
   );
 }
 
 
-export default ProfileSidebar;
+export default AccountSidebar;
