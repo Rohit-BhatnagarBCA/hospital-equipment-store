@@ -13,6 +13,9 @@ import Profile from "../pages/Profile";
 
 import ProfileOrders from "../components/Profile/Orders/ProfileOrders";
 import ProfileOrderDetails from "../components/Profile/Orders/ProfileOrderDetails";
+// Import the shared admin layout and dashboard page.
+import AdminLayout from "../components/admin/AdminLayout";
+import AdminDashboard from "../pages/admin";
 
 
 function AppRoutes() {
@@ -60,6 +63,11 @@ function AppRoutes() {
         path="/profile/orders/:orderId"
         element={<ProfileOrderDetails />}
       />
+
+      {/* Admin dashboard routes. Keep existing storefront routes unchanged. */}
+<Route path="/admin" element={<AdminLayout />}>
+  <Route index element={<AdminDashboard />} />
+</Route>
 
     </Routes>
   );

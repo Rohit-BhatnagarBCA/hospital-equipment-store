@@ -13,6 +13,10 @@ const createSecurityMiddleware = require("./middleware/security");
 
 const healthRoutes = require("./routes/health.routes");
 const productRoutes = require("./routes/product.routes");
+const authRoutes = require("./routes/auth.routes");
+const orderRoutes = require("./routes/order.routes");
+const analyticsRoutes = require("./routes/analytics.routes");
+const quoteRoutes = require("./routes/quote.routes");
 
 const app = express();
 
@@ -43,13 +47,25 @@ app.get("/", (req, res) => {
   });
 });
 
-
- // Register health endpoints under the versioned API prefix.
+// Register health endpoints under the versioned API prefix.
 app.use("/api/v1/health", healthRoutes);
 
-// Register public product catalogue endpoints BEFORE the 404 handler.
+// Public product catalogue endpoints.
 app.use("/api/v1/products", productRoutes);
 
+// NEW: registration, login and "who am I".
+app.use("/api/v1/auth", authRoutes);
+
+// NEW: customer orders (login required) and admin order management.
+app.use("/api/v1/orders", orderRoutes);
+
+// NEW: sales dashboard data (admin only).
+app.use("/api/v1/analytics", analyticsRoutes);
+
+// Accept quotation requests separately from the public product catalogue.
+app.use("/api/v1/quotes", quoteRoutes);
+
+// All routes must be registered BEFORE the 404 handler.
 // Return a consistent response for unknown routes.
 app.use(require("./middleware/notFound"));
 

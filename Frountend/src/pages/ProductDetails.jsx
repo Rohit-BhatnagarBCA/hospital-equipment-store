@@ -266,18 +266,19 @@ function ProductDetails() {
               productName={product.name}
             />
 
-            <ProductInfo
-              category={product.category}
-              name={product.name}
-              rating={product.rating}
-              reviews={product.reviews}
-              description={product.description}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              discount={product.discount}
-              stock={product.stock}
-              configurations={product.configurations}
-            />
+           <ProductInfo
+  productSlug={product.id}
+  category={product.category}
+  name={product.name}
+  rating={product.rating}
+  reviews={product.reviews}
+  description={product.description}
+  price={product.price}
+  originalPrice={product.originalPrice}
+  discount={product.discount}
+  stock={product.stock}
+  configurations={product.configurations}
+/>
           </div>
         </section>
 

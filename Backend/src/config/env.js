@@ -1,10 +1,14 @@
-
 /**
  * Validates the environment configuration required by the application.
  *
  * Why this matters:
  * Missing or invalid configuration can cause unpredictable failures at runtime.
  * Validating it once during startup makes configuration errors easier to diagnose.
+ *
+ * How it works:
+ * Zod reads process.env, applies defaults, and the app exits immediately if a
+ * required variable is missing or malformed. No other file reads process.env
+ * for application settings; they import this module instead.
  */
 const { z } = require("zod");
 
@@ -17,6 +21,17 @@ const envSchema = z.object({
 
   // A MongoDB connection string is required before the server can start.
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
+
+  // NEW: secret used to sign login tokens (JWT).
+  // There is intentionally NO default value: a guessable default secret would
+  // let anyone forge a token. 32+ characters keeps brute-forcing impractical.
+  JWT_SECRET: z
+    .string()
+    .min(32, "JWT_SECRET must be at least 32 characters long"),
+
+  // NEW: how long a login token stays valid (examples: "1d", "12h", "7d").
+  // Short lifetimes limit the damage if a token is ever leaked.
+  JWT_EXPIRES_IN: z.string().min(2).default("1d"),
 });
 
 const result = envSchema.safeParse(process.env);

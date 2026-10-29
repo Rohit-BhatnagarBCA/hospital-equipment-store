@@ -22,6 +22,7 @@
  */
 
 import { useState } from "react";
+import { createQuoteRequest } from "../../services/quoteApi";
 
 import {
   Minus,
@@ -34,6 +35,7 @@ import {
 
 
 function ProductInfo({
+  productSlug,
   category,
   name,
   rating,
@@ -86,6 +88,44 @@ function ProductInfo({
     setQuantity((currentQuantity) =>
       Math.max(1, currentQuantity - 1)
     );
+  };
+
+
+    // Track the quotation form and its submission status.
+  const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+  const [isSubmittingQuote, setIsSubmittingQuote] = useState(false);
+  const [quoteError, setQuoteError] = useState("");
+  const [quoteSuccess, setQuoteSuccess] = useState("");
+  const [customerForm, setCustomerForm] = useState({
+    customerName: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  // Submit the selected product and customer details to the backend.
+  const handleQuoteSubmit = async (event) => {
+    event.preventDefault();
+    setIsSubmittingQuote(true);
+    setQuoteError("");
+    setQuoteSuccess("");
+
+    try {
+      const result = await createQuoteRequest({
+        ...customerForm,
+        productSlug,
+        quantity,
+      });
+
+      setQuoteSuccess(
+        `Request submitted successfully. Reference: ${result.id}`
+      );
+      setIsQuoteOpen(false);
+    } catch (error) {
+      setQuoteError(error.message || "Unable to submit your request.");
+    } finally {
+      setIsSubmittingQuote(false);
+    }
   };
 
 
@@ -536,70 +576,56 @@ function ProductInfo({
           Backend functionality will be connected later.
       ================================================= */}
 
-      <div
-        className="
-          mt-7
-          grid
-          gap-3
-          sm:grid-cols-2
-        "
-      >
-
+    
+      <div className="flex flex-col gap-3 sm:flex-row">
         <button
           type="button"
+          onClick={() => {
+            setQuoteError("");
+            setQuoteSuccess("");
+            setIsQuoteOpen(true);
+          }}
           className="
-            flex
-            items-center
-            justify-center
+            flex flex-1
+            items-center justify-center
             gap-2
             rounded-xl
             bg-[#1769d1]
-            px-5
-            py-3.5
-            text-sm
-            font-bold
-            text-white
-            shadow-sm
-            transition-all
-            duration-200
+            px-5 py-3.5
+            text-sm font-bold text-white
+            transition-all duration-200
             hover:bg-[#0d4fa8]
-            hover:shadow-md
             active:scale-[0.99]
           "
         >
           <ShoppingCart size={18} />
-
           Add to Quote
         </button>
 
-
         <button
           type="button"
+          onClick={() => {
+            setQuoteError("");
+            setQuoteSuccess("");
+            setIsQuoteOpen(true);
+          }}
           className="
-            flex
-            items-center
-            justify-center
+            flex flex-1
+            items-center justify-center
             gap-2
             rounded-xl
-            border
-            border-blue-100
+            border border-blue-100
             bg-white
-            px-5
-            py-3.5
-            text-sm
-            font-bold
-            text-[#1769d1]
-            transition-all
-            duration-200
+            px-5 py-3.5
+            text-sm font-bold text-[#1769d1]
+            transition-all duration-200
             hover:bg-blue-50
             active:scale-[0.99]
           "
         >
           <MessageSquare size={18} />
-
           Contact Supplier
         </button>
-
       </div>
 
 
@@ -663,6 +689,171 @@ function ProductInfo({
         </div>
 
       </div>
+
+      
+      {/* Show the server-confirmed result without interrupting the page. */}
+      {quoteSuccess && (
+        <p
+          role="status"
+          className="mt-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800"
+        >
+          {quoteSuccess}
+        </p>
+      )}
+
+      {quoteError && (
+        <p
+          role="alert"
+          className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+        >
+          {quoteError}
+        </p>
+      )}
+
+      {isQuoteOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="quote-form-title"
+        >
+          <div className="my-auto w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-[#1769d1]">
+                  Business enquiry
+                </p>
+                <h2
+                  id="quote-form-title"
+                  className="mt-2 text-2xl font-bold text-[#102a4c]"
+                >
+                  Request a quotation
+                </h2>
+                <p className="mt-2 text-sm text-slate-500">
+                  {name} · Quantity: {quantity}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsQuoteOpen(false)}
+                disabled={isSubmittingQuote}
+                aria-label="Close quotation form"
+                className="rounded-lg px-3 py-2 text-slate-500 hover:bg-slate-100"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleQuoteSubmit} className="mt-6 space-y-4">
+              <div>
+                <label htmlFor="quote-customer-name" className="mb-1 block text-sm font-semibold text-slate-700">
+                  Full name
+                </label>
+                <input
+                  id="quote-customer-name"
+                  required
+                  minLength={2}
+                  maxLength={100}
+                  autoComplete="name"
+                  value={customerForm.customerName}
+                  onChange={(event) =>
+                    setCustomerForm({
+                      ...customerForm,
+                      customerName: event.target.value,
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#1769d1]"
+                  placeholder="Your name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="quote-email" className="mb-1 block text-sm font-semibold text-slate-700">
+                  Business email
+                </label>
+                <input
+                  id="quote-email"
+                  type="email"
+                  required
+                  maxLength={254}
+                  autoComplete="email"
+                  value={customerForm.email}
+                  onChange={(event) =>
+                    setCustomerForm({
+                      ...customerForm,
+                      email: event.target.value,
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#1769d1]"
+                  placeholder="you@company.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="quote-phone" className="mb-1 block text-sm font-semibold text-slate-700">
+                  Phone number
+                </label>
+                <input
+                  id="quote-phone"
+                  type="tel"
+                  required
+                  minLength={7}
+                  maxLength={20}
+                  autoComplete="tel"
+                  value={customerForm.phone}
+                  onChange={(event) =>
+                    setCustomerForm({
+                      ...customerForm,
+                      phone: event.target.value,
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#1769d1]"
+                  placeholder="+91 98765 43210"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="quote-message" className="mb-1 block text-sm font-semibold text-slate-700">
+                  Requirements (optional)
+                </label>
+                <textarea
+                  id="quote-message"
+                  rows={3}
+                  maxLength={1000}
+                  value={customerForm.message}
+                  onChange={(event) =>
+                    setCustomerForm({
+                      ...customerForm,
+                      message: event.target.value,
+                    })
+                  }
+                  className="w-full resize-y rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#1769d1]"
+                  placeholder="Tell us about delivery, bulk quantity or other requirements..."
+                />
+              </div>
+
+              {quoteError && (
+                <p role="alert" className="text-sm text-red-600">
+                  {quoteError}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmittingQuote}
+                className="w-full rounded-xl bg-[#1769d1] px-5 py-3.5 text-sm font-bold text-white transition-colors hover:bg-[#0d4fa8] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmittingQuote ? "Submitting..." : "Submit quotation request"}
+              </button>
+
+              <p className="text-xs leading-5 text-slate-400">
+                Your details will be used to respond to this quotation request.
+              </p>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

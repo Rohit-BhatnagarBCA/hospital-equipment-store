@@ -1,12 +1,12 @@
-
 /**
  * Performs database operations for the product catalogue.
  *
  * Keeping database access in a repository makes it easier to test and later
  * replace the persistence layer without rewriting controllers.
- */ 
+ */
 
 const Product = require("../models/product.model");
+
 /**
  * Escapes regular-expression characters before using search text in a regex.
  * This prevents user input from changing the intended search pattern.
@@ -51,7 +51,21 @@ async function findActiveProductBySlug(slug) {
     .lean();
 }
 
+/**
+ * NEW: loads several active products in ONE query.
+ * Used by order creation so prices are read from the database, not the client.
+ */
+async function findActiveProductsBySlugs(slugs) {
+  return Product.find({
+    slug: { $in: slugs },
+    status: "active",
+  })
+    .select("-__v")
+    .lean();
+}
+
 module.exports = {
   findActiveProducts,
   findActiveProductBySlug,
+  findActiveProductsBySlugs,
 };
