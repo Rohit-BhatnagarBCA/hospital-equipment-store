@@ -2,131 +2,87 @@
 /**
  * Admin API Service
  *
- * Purpose:
- * - Fetch products from the existing backend catalogue.
- * - Support common paginated and non-paginated response formats.
- * - Calculate inventory statistics from real product quantities.
- *
- * Note:
- * - This service reads the public catalogue.
- * - Protected admin APIs will be needed for stock updates and mutations.
+ * Handles admin catalogue requests and dashboard product statistics.
+ * Admin mutations use JWT authentication and multipart form data.
  */
 
-const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL ||
-  "http://localhost:5000/api/v1"
-).replace(/\/+$/, "");
+import { API_BASE_URL } from "../config/api";
 
-const PAGE_SIZE = 50;
+const ADMIN_PRODUCTS_URL = `${API_BASE_URL}/admin/products`;
+const PUBLIC_PRODUCTS_URL = `${API_BASE_URL}/products`;
 const LOW_STOCK_THRESHOLD = 10;
-const REQUEST_TIMEOUT_MS = 10000;
+const REQUEST_TIMEOUT_MS = 15000;
 
-/**
- * Extract product records from supported backend response formats.
- */
-function extractProductRecords(payload) {
-  const candidates = [
-    payload?.data?.items,
-    payload?.data?.products,
-    payload?.data?.results,
-    payload?.data?.docs,
-    payload?.data,
-    payload?.items,
-    payload?.products,
-    payload?.results,
-    payload?.docs,
-  ];
-
-  for (const candidate of candidates) {
-    if (Array.isArray(candidate)) {
-      return candidate;
-    }
-  }
-
-  // Some APIs return a single product object rather than a list.
-  if (
-    payload?.data &&
-    typeof payload.data === "object" &&
-    (payload.data._id || payload.data.id || payload.data.slug)
-  ) {
-    return [payload.data];
-  }
-
-  return null;
-}
-
-/**
- * Read pagination metadata when available.
- */
-function extractPagination(payload) {
+function getAuthToken() {
   return (
-    payload?.data?.pagination ||
-    payload?.pagination ||
-    payload?.meta?.pagination ||
-    payload?.meta ||
-    {}
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("token") ||
+    ""
   );
 }
 
-/**
- * Fetch one page from the existing product API.
- */
-async function fetchProductPage(page) {
+async function apiRequest(url, options = {}, requiresAuth = false) {
   const controller = new AbortController();
-
   const timeoutId = setTimeout(
     () => controller.abort(),
     REQUEST_TIMEOUT_MS
   );
 
   try {
-    const query = new URLSearchParams({
-      page: String(page),
-      limit: String(PAGE_SIZE),
-    });
+    const token = requiresAuth ? getAuthToken() : "";
+    
+    if (requiresAuth && !token) {
+      throw new Error(
+        "Admin login required. Please log in and save your JWT token as authToken."
+      );
+    }
 
-    const response = await fetch(
-      `${API_BASE_URL}/products?${query.toString()}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-        signal: controller.signal,
-      }
-    );
+    const headers = {
+      Accept: "application/json",
+      ...options.headers,
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Let the browser set Content-Type for FormData, including its boundary.
+    if (!(options.body instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
 
     const payload = await response.json().catch(() => null);
 
     if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error("Your session has expired. Please log in again.");
+      }
+
+      if (response.status === 403) {
+        throw new Error("This account does not have admin permission.");
+      }
+
       throw new Error(
         payload?.message ||
-          payload?.error ||
-          `Unable to fetch products (${response.status}).`
+        payload?.error ||
+        `Request failed with status ${response.status}`
       );
     }
 
-    const items = extractProductRecords(payload);
-
-    if (!items) {
-      throw new Error(
-        "Unrecognized products API response. Please inspect the Network response."
-      );
-    }
-
-    return {
-      items,
-      pagination: extractPagination(payload),
-    };
+    return payload;
   } catch (error) {
     if (error.name === "AbortError") {
-      throw new Error("The products request timed out. Please retry.");
+      throw new Error("Request timed out. Please try again.");
     }
 
     if (error instanceof TypeError) {
-      throw new Error(
-        "Cannot connect to the backend. Check whether the server is running."
-      );
+      throw new Error("Cannot connect to backend. Check the server.");
     }
 
     throw error;
@@ -136,80 +92,148 @@ async function fetchProductPage(page) {
 }
 
 /**
- * Safely read a numeric pagination field.
+ * Extract product records from common API response formats.
  */
-function getPositiveInteger(value) {
-  const number = Number(value);
+function extractProductRecords(payload) {
+  const candidates = [
+    payload?.data?.items,
+    payload?.data?.products,
+    payload?.data,
+    payload?.items,
+    payload?.products,
+  ];
 
-  return Number.isInteger(number) && number > 0 ? number : null;
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) return candidate;
+  }
+
+  return [];
 }
 
 /**
- * Fetch the public catalogue and follow pagination when provided.
+ * Load all admin products, including inactive products.
  */
-export async function fetchAdminProducts() {
-  const firstPage = await fetchProductPage(1);
-  const products = [...firstPage.items];
-  const pagination = firstPage.pagination;
+export async function fetchAdminProducts({ search = "", page = 1, limit = 50 } = {}) {
+  const query = new URLSearchParams({
+    search,
+    page: String(page),
+    limit: String(limit),
+  });
 
-  const totalProducts =
-    getPositiveInteger(pagination.total) ??
-    getPositiveInteger(pagination.totalItems) ??
-    getPositiveInteger(pagination.totalDocs) ??
-    getPositiveInteger(pagination.count);
-
-  let totalPages =
-    getPositiveInteger(pagination.totalPages) ??
-    getPositiveInteger(pagination.pages);
-
-  if (!totalPages && totalProducts != null) {
-    totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE));
-  }
-
-  // If the API doesn't expose pagination metadata, avoid guessing
-  // how many pages exist. Use the records returned by the first page.
-  if (totalPages && totalPages > 1) {
-    for (let start = 2; start <= totalPages; start += 3) {
-      const end = Math.min(start + 2, totalPages);
-      const requests = [];
-
-      for (let page = start; page <= end; page += 1) {
-        requests.push(fetchProductPage(page));
-      }
-
-      const results = await Promise.all(requests);
-
-      for (const result of results) {
-        products.push(...result.items);
-      }
-    }
-  }
+  const payload = await apiRequest(
+    `${ADMIN_PRODUCTS_URL}?${query.toString()}`,
+    { method: "GET" },
+    true
+  );
 
   return {
-    products,
-    totalProducts: totalProducts ?? products.length,
+    products: extractProductRecords(payload),
+    pagination: payload?.pagination || {},
   };
 }
 
 /**
- * Calculate inventory metrics from the returned product records.
+ * Create a product using multipart form data.
+ */
+export async function createAdminProduct(formData) {
+  return apiRequest(
+    ADMIN_PRODUCTS_URL,
+    {
+      method: "POST",
+      body: formData,
+    },
+    true
+  );
+}
+
+/**
+ * Update an existing product using multipart form data.
+ */
+export async function updateAdminProduct(productId, formData) {
+  return apiRequest(
+    `${ADMIN_PRODUCTS_URL}/${encodeURIComponent(productId)}`,
+    {
+      method: "PUT",
+      body: formData,
+    },
+    true
+  );
+}
+
+/**
+ * Delete a product by its MongoDB ID.
+ */
+export async function deleteAdminProduct(productId) {
+  return apiRequest(
+    `${ADMIN_PRODUCTS_URL}/${encodeURIComponent(productId)}`,
+    { method: "DELETE" },
+    true
+  );
+}
+
+/**
+ * Fetch one public product page for the existing dashboard overview.
+ */
+async function fetchProductPage(page) {
+  const query = new URLSearchParams({
+    page: String(page),
+    limit: "50",
+  });
+
+  const payload = await apiRequest(
+    `${PUBLIC_PRODUCTS_URL}?${query.toString()}`
+  );
+
+  return {
+    items: extractProductRecords(payload),
+    pagination:
+      payload?.pagination ||
+      payload?.data?.pagination ||
+      {},
+  };
+}
+
+/**
+ * Preserve the existing dashboard's product overview functionality.
+ */
+export async function fetchAdminOverview() {
+  const firstPage = await fetchProductPage(1);
+  const products = [...firstPage.items];
+
+  const totalPages = Number(
+    firstPage.pagination.totalPages ||
+    firstPage.pagination.pages ||
+    1
+  );
+
+  for (let page = 2; page <= Math.min(totalPages, 20); page += 1) {
+    const result = await fetchProductPage(page);
+    products.push(...result.items);
+  }
+
+  const inventoryStats = calculateInventoryStats(products);
+
+  return {
+    totalProducts: Number(firstPage.pagination.total) || products.length,
+    ...inventoryStats,
+    products,
+    source: "public-catalogue",
+  };
+}
+
+/**
+ * Calculate inventory metrics from product records.
  */
 export function calculateInventoryStats(products = []) {
-  const safeProducts = Array.isArray(products) ? products : [];
-
   let inventoryUnits = 0;
   let lowStockCount = 0;
   let outOfStockCount = 0;
 
-  for (const product of safeProducts) {
-    const rawQuantity = Number(
-      product.stockQuantity ?? product.stock ?? 0
+  for (const product of products) {
+    const quantity = Math.max(
+      0,
+      Number(product.stockQuantity ?? product.stock ?? 0) || 0
     );
-
-    const quantity =
-      Number.isFinite(rawQuantity) && rawQuantity > 0
-        ? rawQuantity
-        : 0;
 
     inventoryUnits += quantity;
 
@@ -221,14 +245,12 @@ export function calculateInventoryStats(products = []) {
   }
 
   const categories = new Set(
-    safeProducts
-      .map((product) => {
-        if (typeof product.category === "string") {
-          return product.category.trim();
-        }
-
-        return product.category?.name || product.category?.slug || "";
-      })
+    products
+      .map((product) =>
+        typeof product.category === "string"
+          ? product.category.trim()
+          : product.category?.name || ""
+      )
       .filter(Boolean)
   );
 
@@ -238,20 +260,5 @@ export function calculateInventoryStats(products = []) {
     outOfStockCount,
     categoryCount: categories.size,
     lowStockThreshold: LOW_STOCK_THRESHOLD,
-  };
-}
-
-/**
- * Load the dashboard product and inventory overview.
- */
-export async function fetchAdminOverview() {
-  const { products, totalProducts } = await fetchAdminProducts();
-  const stats = calculateInventoryStats(products);
-
-  return {
-    totalProducts,
-    ...stats,
-    products,
-    source: "public-catalogue",
   };
 }

@@ -1,3 +1,4 @@
+
 /*
  * AppRoutes
  * -------------------------------------------------------
@@ -13,65 +14,40 @@ import Profile from "../pages/Profile";
 
 import ProfileOrders from "../components/Profile/Orders/ProfileOrders";
 import ProfileOrderDetails from "../components/Profile/Orders/ProfileOrderDetails";
-// Import the shared admin layout and dashboard page.
+
 import AdminLayout from "../components/admin/AdminLayout";
 import AdminDashboard from "../pages/admin";
-
+import AdminProducts from "../pages/admin/AdminProducts";
 
 function AppRoutes() {
-
   return (
     <Routes>
+      {/* Storefront home page */}
+      <Route path="/" element={<Home />} />
 
-      {/* Home */}
-      <Route
-        path="/"
-        element={<Home />}
-      />
+      {/* Public product catalogue */}
+      <Route path="/products" element={<Products />} />
 
-
-      {/* Product catalogue */}
-      <Route
-        path="/products"
-        element={<Products />}
-      />
-
-
-      {/* Individual product */}
-      <Route
-        path="/products/:productId"
-        element={<ProductDetails />}
-      />
-
+      {/* Individual product details */}
+      <Route path="/products/:productId" element={<ProductDetails />} />
 
       {/* Customer profile */}
-      <Route
-        path="/profile"
-        element={<Profile />}
-      />
+      <Route path="/profile" element={<Profile />} />
 
-
-      {/* All customer orders */}
-      <Route
-        path="/profile/orders"
-        element={<ProfileOrders />}
-      />
-
-
-      {/* Individual order details */}
+      {/* Customer orders */}
+      <Route path="/profile/orders" element={<ProfileOrders />} />
       <Route
         path="/profile/orders/:orderId"
         element={<ProfileOrderDetails />}
       />
 
-      {/* Admin dashboard routes. Keep existing storefront routes unchanged. */}
-<Route path="/admin" element={<AdminLayout />}>
-  <Route index element={<AdminDashboard />} />
-</Route>
-
+      {/* Admin workspace */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="products" element={<AdminProducts />} />
+      </Route>
     </Routes>
   );
 }
-
 
 export default AppRoutes;

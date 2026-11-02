@@ -1,16 +1,12 @@
-
 /**
- * Defines the MongoDB schema for medical equipment products.
- *
- * The schema enforces consistent data types and basic constraints at the
- * database-model level. Request validation should still happen before saving.
+ * MongoDB schema for medical equipment products.
+ * Existing catalogue fields are preserved and admin media fields are added.
  */
- 
+
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema(
   {
-    // A stable, human-readable identifier used in product URLs.
     slug: {
       type: String,
       required: true,
@@ -78,6 +74,13 @@ const productSchema = new mongoose.Schema(
       maxlength: 100,
     },
 
+    // Numeric stock count for inventory calculations.
+    stockQuantity: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     badge: {
       type: String,
       default: "",
@@ -89,7 +92,24 @@ const productSchema = new mongoose.Schema(
       default: [],
     },
 
+    // Keep URLs as strings for compatibility with existing product cards.
     images: {
+      type: [String],
+      default: [],
+    },
+
+    videos: {
+      type: [String],
+      default: [],
+    },
+
+    // Cloudinary public IDs are stored separately for reliable asset deletion.
+    imagePublicIds: {
+      type: [String],
+      default: [],
+    },
+
+    videoPublicIds: {
       type: [String],
       default: [],
     },
@@ -104,7 +124,6 @@ const productSchema = new mongoose.Schema(
       default: {},
     },
 
-    // Only active products are visible through the public catalogue API.
     status: {
       type: String,
       enum: ["active", "inactive"],
@@ -119,7 +138,6 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-// Improve common catalogue queries without indexing every field unnecessarily.
 productSchema.index({ category: 1, status: 1 });
 productSchema.index({ name: 1, status: 1 });
 

@@ -1,3 +1,4 @@
+
 /**
  * Express Application Configuration
  *
@@ -13,17 +14,12 @@ const createSecurityMiddleware = require("./middleware/security");
 
 const healthRoutes = require("./routes/health.routes");
 const productRoutes = require("./routes/product.routes");
-const authRoutes = require("./routes/auth.routes");
-const orderRoutes = require("./routes/order.routes");
-const analyticsRoutes = require("./routes/analytics.routes");
-const quoteRoutes = require("./routes/quote.routes");
+const adminProductRoutes = require("./routes/admin-product.routes");
 
 const app = express();
 
-// Avoid exposing the Express framework in response headers.
 app.disable("x-powered-by");
 
-// Configure security middleware in one place to avoid duplication.
 const {
   helmetMiddleware,
   corsMiddleware,
@@ -33,13 +29,11 @@ const {
 app.use(helmetMiddleware);
 app.use(corsMiddleware);
 
-// Limit incoming JSON payload size.
+// Parse JSON requests. Multipart requests are handled by Multer.
 app.use(express.json({ limit: "20kb" }));
 
-// Apply a shared rate limit to incoming requests.
 app.use(apiRateLimiter);
 
-// Basic endpoint to confirm that the API is running.
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
@@ -47,30 +41,19 @@ app.get("/", (req, res) => {
   });
 });
 
-// Register health endpoints under the versioned API prefix.
+// Health check routes.
 app.use("/api/v1/health", healthRoutes);
 
-// Public product catalogue endpoints.
+// Public product catalogue routes.
 app.use("/api/v1/products", productRoutes);
 
-// NEW: registration, login and "who am I".
-app.use("/api/v1/auth", authRoutes);
+// Protected admin product management routes.
+app.use("/api/v1/admin/products", adminProductRoutes);
 
-// NEW: customer orders (login required) and admin order management.
-app.use("/api/v1/orders", orderRoutes);
-
-// NEW: sales dashboard data (admin only).
-app.use("/api/v1/analytics", analyticsRoutes);
-
-// Accept quotation requests separately from the public product catalogue.
-app.use("/api/v1/quotes", quoteRoutes);
-
-// All routes must be registered BEFORE the 404 handler.
-// Return a consistent response for unknown routes.
+// Handle unknown routes.
 app.use(require("./middleware/notFound"));
 
-// Handle errors after all routes and the not-found middleware.
+// Handle application errors.
 app.use(require("./middleware/errorHandler"));
-
 
 module.exports = app;
