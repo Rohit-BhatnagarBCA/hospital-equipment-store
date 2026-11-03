@@ -16,6 +16,8 @@ const healthRoutes = require("./routes/health.routes");
 const productRoutes = require("./routes/product.routes");
 const adminProductRoutes = require("./routes/admin-product.routes");
 
+const categoryRoutes = require("./routes/category.routes");
+
 const app = express();
 
 app.disable("x-powered-by");
@@ -55,5 +57,8 @@ app.use(require("./middleware/notFound"));
 
 // Handle application errors.
 app.use(require("./middleware/errorHandler"));
+
+// Protected admin category management routes.
+app.use("/api/v1/admin/categories", categoryRoutes);
 
 module.exports = app;

@@ -18,6 +18,7 @@ import ProfileOrderDetails from "../components/Profile/Orders/ProfileOrderDetail
 import AdminLayout from "../components/admin/AdminLayout";
 import AdminDashboard from "../pages/admin";
 import AdminProducts from "../pages/admin/AdminProducts";
+import AdminCategories from "../pages/AdminCategories";
 
 function AppRoutes() {
   return (
@@ -36,6 +37,7 @@ function AppRoutes() {
 
       {/* Customer orders */}
       <Route path="/profile/orders" element={<ProfileOrders />} />
+
       <Route
         path="/profile/orders/:orderId"
         element={<ProfileOrderDetails />}
@@ -44,7 +46,12 @@ function AppRoutes() {
       {/* Admin workspace */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminDashboard />} />
+
+        {/* Admin product management */}
         <Route path="products" element={<AdminProducts />} />
+
+        {/* Admin category management */}
+        <Route path="categories" element={<AdminCategories />} />
       </Route>
     </Routes>
   );
